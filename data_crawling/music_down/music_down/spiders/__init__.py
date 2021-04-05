@@ -17,12 +17,22 @@ class QuotesSpider(scrapy.Spider):
     def __init__(self, name=None, **kwargs):
         super().__init__(name=name, **kwargs)
 
-        self.song_db = pd.DataFrame(columns = ['title' , 'artist', 'video_name'])
+        self.save_result_path = 'result.csv'
+        self.output_path = '/content/drive/MyDrive/data/svs'
+        self.input_list = '../data_list.csv'
+
+        if os.path.isfile(save_result_path):
+            self.song_db = pd.read_csv(save_result_path)
+        else:
+            self.song_db = pd.DataFrame(columns = ['title' , 'artist', 'video_name'])
 
     name = "quotes"
     def make_url(self):
-        data = pd.read_csv('../data_list.csv')
+        data = pd.read_csv(self.input_list)
         data = data[['titles','artist']]
+        if len(self.song_db) != 0:
+            data = data[data['titles'] == self.song_db['title'] and data['artist'] == self.song_db['artist']]
+        
         data['adding'] = data['titles'] + ' ' + data['artist'] + ' 가사'
         
         urls = []
@@ -41,8 +51,6 @@ class QuotesSpider(scrapy.Spider):
         pattern = r'\bvar\s+data\s*=\s*(\{.*?\})\s*;\s*\n'
         links = response.css('script::text')
         for i in links:
-            '''print('\n나다\n')
-            print(i)'''
             try:
                 print(response.meta)
                 i_data = i.get()  
@@ -50,14 +58,15 @@ class QuotesSpider(scrapy.Spider):
                     link = re.search('watch\?v=[^/]{11}',i_data.replace('var ytInitialData =','')).group()
 
                     url = 'https://www.youtube.com/' + link 
-                    out_file = YouTube(url).streams.filter(only_audio = True).first().download(output_path = 'G:/내 드라이브/data/svs/')
+                    out_file = YouTube(url).streams.filter(only_audio = True).first().download(output_path = '/content/drive/MyDrive/data/svs')
                     base, ext = os.path.splitext(out_file)
                     new_file = base + '.mp3'
                     os.rename(out_file, new_file)
                     print("music has been successfully downloaded.")
     
                     self.song_db = self.song_db.append({'title':response.meta['title'],'artist':response.meta['artist'],'video_name':out_file},ignore_index=True)
-                    self.song_db.to_csv('result.csv')
+                    self.song_db.to_csv(self.save_result_path)
+                
                 else:
                     continue
             except Exception as e:

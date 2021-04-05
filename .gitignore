@@ -1,4 +1,7 @@
-*.csv
+song.csv
+song2.csv
+#result.csv
+
 *.txt
 
 
