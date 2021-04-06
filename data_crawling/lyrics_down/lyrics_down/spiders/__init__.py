@@ -30,7 +30,7 @@ class QuotesSpider(scrapy.Spider):
             }
         }
 
-        self.save_result_path = 'result.csv'
+        self.save_result_path = '/content/drive/MyDrive/data/svs/result.csv'
         self.input_list = '../data_list.csv'
 
         if os.path.isfile(self.save_result_path):
@@ -85,5 +85,4 @@ class QuotesSpider(scrapy.Spider):
         self.song_db['artist'] = pd.Series(self.artist_series)
         self.song_db['lyrics'] = pd.Series(self.lyrics_series)
 
-        print(self.song_db.head())
         self.song_db.to_csv(self.save_result_path)
