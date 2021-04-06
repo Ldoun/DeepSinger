@@ -134,3 +134,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+data_crawling/lyrics_down/result.csv
+data_crawling/lyrics_down/result.csv
