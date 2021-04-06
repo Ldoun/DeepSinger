@@ -34,18 +34,20 @@ class QuotesSpider(scrapy.Spider):
         self.input_list = '../data_list.csv'
 
         if os.path.isfile(self.save_result_path):
-            self.song_db_before = pd.read_csv(self.save_result_path)
-        else:
-            self.song_db_before = pd.DataFrame(columns = ['titles' , 'artist', 'lyrics'])    
+            self.song_db = pd.read_csv(self.save_result_path)
+        else:   
+            self.song_db = pd.DataFrame(columns = ['titles' , 'artist', 'lyrics'])
         
-        #self.song_db = pd.DataFrame(columns = ['titles' , 'artist', 'lyrics'])
+        self.lyrics_series = list(self.song_db['lyrics'])
+        self.title_series = list(self.song_db['titles'])
+        self.artist_series = list(self.song_db['artist'])
 
     name = "quotes"
     def make_url(self):
         data = pd.read_csv(self.input_list)
         data = data[['titles','artist']]
-        if len(self.song_db_before) != 0:
-            data = pd.concat([data,self.song_db_before[['titles','artist']]]).drop_duplicates(keep=False)
+        if len(self.song_db) != 0:
+            data = pd.concat([data,self.song_db[['titles','artist']]]).drop_duplicates(keep=False)
             print(data.head())
             print('????????????????')
 
@@ -71,11 +73,17 @@ class QuotesSpider(scrapy.Spider):
         yield scrapy.Request(url=url, callback=self.parse_lyrics,meta=response.meta)
 
     def parse_lyrics(self,response):
-        
         lyrics = re.sub('\\r\\n(\\t){1,}','', ' '.join(response.xpath('//*[@id="d_video_summary"]/text()').getall()))
-        raw_data = {'titles':response.meta['title'],'artist':response.meta['artist'],'lyrics':lyrics.replace("\n","")}
-        song_db = pd.DataFrame([raw_data])
-        #self.song_db = self.song_db.append({'titles':response.meta['title'],'artist':response.meta['artist'],'lyrics':lyrics.replace("\n","")},ignore_index=True)
-        self.song_db_before = pd.concat([self.song_db_before,song_db])
-        print(self.song_db_before.head())
-        self.song_db_before.to_csv(self.save_result_path)
+        #raw_data = {'titles':response.meta['title'],'artist':response.meta['artist'],'lyrics':lyrics.replace("\n","")}
+
+        self.title_series.append(response.meta['title'])
+        self.artist_series.append(response.meta['artist'])
+        self.lyrics_series.append(lyrics.replace("\n"," ").replace('\r',' '))
+
+        self.song_db = pd.DataFrame()
+        self.song_db['titles'] = pd.Series(self.title_series)
+        self.song_db['artist'] = pd.Series(self.artist_series)
+        self.song_db['lyrics'] = pd.Series(self.lyrics_series)
+
+        print(self.song_db.head())
+        self.song_db.to_csv(self.save_result_path)
