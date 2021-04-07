@@ -12,6 +12,7 @@ import re
 from pytube import YouTube
 import os
 import pandas as pd
+import time
 
 class QuotesSpider(scrapy.Spider):
     def __init__(self, name=None, **kwargs):
@@ -61,6 +62,7 @@ class QuotesSpider(scrapy.Spider):
         pattern = r'\bvar\s+data\s*=\s*(\{.*?\})\s*;\s*\n'
         links = response.css('script::text')
         for i in links:
+            time.sleep(0.05)
             try:
                 print(response.meta)
                 i_data = i.get()  
