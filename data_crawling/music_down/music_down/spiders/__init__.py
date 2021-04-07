@@ -17,9 +17,9 @@ class QuotesSpider(scrapy.Spider):
     def __init__(self, name=None, **kwargs):
         super().__init__(name=name, **kwargs)
 
-        self.check_progress = 'progress.csv'
+        self.check_progress = '/content/drive/MyDrive/data/svs/progress.csv'
         self.output_path = '/content/drive/MyDrive/data/svs'
-        self.input_list = '../lyrics_result_drop.csv'
+        self.input_list = '/content/drive/MyDrive/data/svs/lyrics_result_drop.csv'
 
         if os.path.isfile(self.check_progress):
             self.progress_db = pd.read_csv(self.check_progress)
@@ -68,7 +68,7 @@ class QuotesSpider(scrapy.Spider):
                     link = re.search('watch\?v=[^/]{11}',i_data.replace('var ytInitialData =','')).group()
 
                     url = 'https://www.youtube.com/' + link 
-                    out_file = YouTube(url).streams.filter(only_audio = True).first().download(output_path = '/content/drive/MyDrive/data/svs')
+                    out_file = YouTube(url).streams.filter(only_audio = True).first().download(output_path = '/content/drive/MyDrive/data/svs/music')
                     base, ext = os.path.splitext(out_file)
                     new_file = base + '.mp3'
                     os.rename(out_file, new_file)
