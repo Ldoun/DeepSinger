@@ -136,3 +136,5 @@ dmypy.json
 .pyre/
 data_crawling/lyrics_down/result.csv
 data_crawling/lyrics_down/result.csv
+data_crawling/lyrics_result_drop.csv
+data_crawling/result.dropna.csv

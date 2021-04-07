@@ -17,22 +17,32 @@ class QuotesSpider(scrapy.Spider):
     def __init__(self, name=None, **kwargs):
         super().__init__(name=name, **kwargs)
 
-        self.save_result_path = 'result.csv'
+        self.check_progress = 'progress.csv'
         self.output_path = '/content/drive/MyDrive/data/svs'
-        self.input_list = '../data_list.csv'
+        self.input_list = '../lyrics_result_drop.csv'
 
-        if os.path.isfile(save_result_path):
-            self.song_db = pd.read_csv(save_result_path)
+        if os.path.isfile(self.check_progress):
+            self.progress_db = pd.read_csv(self.check_progress)
         else:
-            self.song_db = pd.DataFrame(columns = ['title' , 'artist', 'video_name'])
+            self.progress_db = pd.DataFrame(columns = ['titles' , 'artist','video_name'])
+        
+        self.video_series = list(self.progress_db['video_name'])
+        self.title_series = list(self.progress_db['titles'])
+        self.artist_series = list(self.progress_db['artist'])
+
+        self.result_db = pd.read_csv(self.input_list)
 
     name = "quotes"
     def make_url(self):
-        data = pd.read_csv(self.input_list)
-        data = data[['titles','artist']]
-        if len(self.song_db) != 0:
-            data = data[data['titles'] == self.song_db['title'] and data['artist'] == self.song_db['artist']]
+        data = self.result_db[['titles','artist']]
+        if len(self.progress_db) != 0:
+            data = pd.concat([data,self.progress_db[['titles','artist']]]).drop_duplicates(keep=False)
+            if len(data) == 0:
+                self.result_db['video_name'] = pd.Series(self.video_series)
+                self.result_db.to_csv('f_result.csv')
+                print('finished')
         
+
         data['adding'] = data['titles'] + ' ' + data['artist'] + ' 가사'
         
         urls = []
@@ -63,12 +73,20 @@ class QuotesSpider(scrapy.Spider):
                     new_file = base + '.mp3'
                     os.rename(out_file, new_file)
                     print("music has been successfully downloaded.")
-    
-                    self.song_db = self.song_db.append({'title':response.meta['title'],'artist':response.meta['artist'],'video_name':out_file},ignore_index=True)
-                    self.song_db.to_csv(self.save_result_path)
+
+                    self.title_series.append(response.meta['title'])
+                    self.artist_series.append(response.meta['artist'])
+                    self.video_series.append(new_file)
+
+                    self.progress_db = pd.DataFrame()
+                    self.progress_db['titles'] = pd.Series(self.title_series)
+                    self.progress_db['artist'] = pd.Series(self.artist_series)
+                    self.progress_db['video_name'] = pd.Series(self.video_series)
+                    
+                    self.progress_db.to_csv(self.check_progress)
                 
                 else:
                     continue
             except Exception as e:
                 print(e)   
-        print(self.song_db.head()) 
+        print(self.progress_db.tail())
