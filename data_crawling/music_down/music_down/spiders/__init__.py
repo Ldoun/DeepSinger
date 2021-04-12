@@ -38,6 +38,8 @@ class QuotesSpider(scrapy.Spider):
         data = self.result_db[['titles','artist']]
         if len(self.progress_db) != 0:
             data = pd.concat([data,self.progress_db[['titles','artist']]]).drop_duplicates(keep=False)
+            print('here')
+            print(data.head())
             if len(data) == 0:
                 self.result_db['video_name'] = pd.Series(self.video_series)
                 self.result_db.to_csv('f_result.csv')
@@ -62,7 +64,7 @@ class QuotesSpider(scrapy.Spider):
         pattern = r'\bvar\s+data\s*=\s*(\{.*?\})\s*;\s*\n'
         links = response.css('script::text')
         for i in links:
-            time.sleep(0.05)
+            time.sleep(0.2)
             try:
                 print(response.meta)
                 i_data = i.get()  
