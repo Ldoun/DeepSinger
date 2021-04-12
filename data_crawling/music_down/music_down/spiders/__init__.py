@@ -42,7 +42,7 @@ class QuotesSpider(scrapy.Spider):
             print(data.head())
             if len(data) == 0:
                 self.result_db['video_name'] = pd.Series(self.video_series)
-                self.result_db.to_csv('f_result.csv')
+                self.result_db.to_csv(self.output_path+'/f_result.csv')
                 print('finished')
         
 
@@ -55,10 +55,16 @@ class QuotesSpider(scrapy.Spider):
             info.append([['title',j],['artist',k]])
         return urls,info
 
+    def make_result(self):
+        self.result_db['video_name'] = pd.Series(self.video_series)
+        self.result_db.to_csv(self.output_path + '/f_result.csv')
+        print('f_result.csv done')
+
     def start_requests(self):
         urls, info = self.make_url()
         for url,meta in zip(urls,info):
             yield scrapy.Request(url=url, callback=self.parse,meta=meta)
+        self.make_result()
 
     def parse(self, response):
         pattern = r'\bvar\s+data\s*=\s*(\{.*?\})\s*;\s*\n'
