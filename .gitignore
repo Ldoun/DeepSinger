@@ -3,6 +3,8 @@ song2.csv
 result.csv
 
 *.txt
+*.tsv
+*.csv
 
 
 # Byte-compiled / optimized / DLL files
