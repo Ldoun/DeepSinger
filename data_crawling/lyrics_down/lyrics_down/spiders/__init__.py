@@ -31,7 +31,7 @@ class QuotesSpider(scrapy.Spider):
         }
 
         self.save_result_path = '/content/drive/MyDrive/data/svs/result.csv'
-        self.input_list = '../data_list.csv'
+        self.input_list = '../data/for_crawl_seperation_mark_dat_list.csv'
 
         if os.path.isfile(self.save_result_path):
             self.song_db = pd.read_csv(self.save_result_path)
