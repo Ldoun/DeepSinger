@@ -30,7 +30,7 @@ class QuotesSpider(scrapy.Spider):
             }
         }
 
-        self.save_result_path = '/content/drive/MyDrive/data/svs/result.csv'
+        self.save_result_path = '/content/drive/MyDrive/data/svs/with_seperation_mark_result.csv'
         self.input_list = '../data/for_crawl_seperation_mark_dat_list.csv'
 
         if os.path.isfile(self.save_result_path):
@@ -80,7 +80,7 @@ class QuotesSpider(scrapy.Spider):
 
         self.title_series.append(response.meta['title'])
         self.artist_series.append(response.meta['artist'])
-        self.lyrics_series.append(lyrics.replace("\n"," ").replace('\r',' '))
+        self.lyrics_series.append(lyrics.replace("\n",".").replace('\r',' '))
 
         self.song_db = pd.DataFrame()
         self.song_db['titles'] = pd.Series(self.title_series)
