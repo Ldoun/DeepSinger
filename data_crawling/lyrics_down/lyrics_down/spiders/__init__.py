@@ -58,7 +58,7 @@ class QuotesSpider(scrapy.Spider):
         urls = []
         info = []
         for i,j,k in zip(data['adding'],data['titles'],data['artist']):
-            urls.append('https://www.melon.com/search/total/index.htm?q='+i)
+            urls.append('https://www.genie.co.kr/search/searchMain?query='+i)
             #urls.append('https://www.melon.com')
             info.append([['title',j],['artist',k]])
         return urls,info
@@ -69,18 +69,22 @@ class QuotesSpider(scrapy.Spider):
             yield scrapy.Request(url=url, callback=self.parse,meta=meta)
 
     def parse(self, response):
-        song_id = response.xpath('//*[@id="frm_songList"]/div/table/tbody/tr/td[1]/div/input/@value')
+        #song_id = response.xpath('//*[@id="frm_songList"]/div/table/tbody/tr/td[1]/div/input/@value') melone
+        song_id = response.xpath('//*[@id="body-content"]/div[3]/div[2]/div/table/tbody/tr[1]/@songid')
         #print('song_id: '+str(song_id.get()))
-        url = 'https://www.melon.com/song/detail.htm?songId='+str(song_id.get())
+        url = 'https://www.genie.co.kr/detail/songInfo?xgnm='+str(song_id.get())
         yield scrapy.Request(url=url, callback=self.parse_lyrics,meta=response.meta)
 
     def parse_lyrics(self,response):
-        lyrics = re.sub('\\r\\n(\\t){1,}','', ' '.join(response.xpath('//*[@id="d_video_summary"]/text()').getall()))
+        # response.xpath('//*[@id="d_video_summary"]/text()') melone
+        #lyrics = re.sub('\\r\\n(\\t){1,}','', ' '.join(response.xpath('//*[@id="pLyrics"]/p/text()').getall()))
         #raw_data = {'titles':response.meta['title'],'artist':response.meta['artist'],'lyrics':lyrics.replace("\n","")}
+        
+        lyrics = re.sub('(\r\n){1,}','%', ' '.join(response.xpath('//*[@id="pLyrics"]/p/text()') .getall()))
 
         self.title_series.append(response.meta['title'])
         self.artist_series.append(response.meta['artist'])
-        self.lyrics_series.append(lyrics.replace("\n",".").replace('\r',' '))
+        self.lyrics_series.append(lyrics)
 
         self.song_db = pd.DataFrame()
         self.song_db['titles'] = pd.Series(self.title_series)
