@@ -81,7 +81,9 @@ class QuotesSpider(scrapy.Spider):
         #raw_data = {'titles':response.meta['title'],'artist':response.meta['artist'],'lyrics':lyrics.replace("\n","")}
         
         lyrics = re.sub('(\r\n){1,}','%', ' '.join(response.xpath('//*[@id="pLyrics"]/p/text()') .getall()))
-
+        lyrics = lyrics.replace('\n','%')
+        lyrics = re.sub('.*작사.*작곡.*%%','', lyrics)
+        
         self.title_series.append(response.meta['title'])
         self.artist_series.append(response.meta['artist'])
         self.lyrics_series.append(lyrics)
