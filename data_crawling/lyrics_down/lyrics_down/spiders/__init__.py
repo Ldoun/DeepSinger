@@ -44,7 +44,7 @@ class QuotesSpider(scrapy.Spider):
 
     name = "quotes"
     def make_url(self):
-        data = pd.read_csv(self.input_list)
+        data = pd.read_csv(self.input_list,sep='\t')
         data = data[['titles','artist']]
         if len(self.song_db) != 0:
             data = pd.concat([data,self.song_db[['titles','artist']]]).drop_duplicates(keep=False)
