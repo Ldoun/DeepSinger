@@ -50,6 +50,7 @@ class QuotesSpider(scrapy.Spider):
             data = pd.concat([data,self.song_db[['titles','artist']]]).drop_duplicates(keep=False)
             print(data.head())
             print('????????????????')
+            print(len(data))
             if len(data) == 0:
                 print('finished')
 
