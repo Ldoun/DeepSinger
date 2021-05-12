@@ -30,7 +30,7 @@ class QuotesSpider(scrapy.Spider):
             }
         }
 
-        self.save_result_path = '/content/drive/MyDrive/data/svs/with_seperation_mark_result.csv'
+        self.save_result_path = '/content/drive/MyDrive/data/svs/gm_with_seperation_mark_result.csv'
         self.input_list = '../data/for_crawl_seperation_mark_dat_list.csv'
 
         if os.path.isfile(self.save_result_path):
