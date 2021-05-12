@@ -87,8 +87,10 @@ class QuotesSpider(scrapy.Spider):
         lyrics = lyrics.replace('\n','%')
         lyrics = re.sub('.*작사.*작곡.*%%','', lyrics)
 
-        info = []
-        info.append([['title',response.meta['title']],['artist',response.meta['artist']],['genie',lyrics]])
+        info = {}
+        info['title'] = response.meta['title']
+        info['artist'] = response.meta['artist']
+        info['genie'] = lyrics
         
         url = "https://www.melon.com/search/song/index.htm?q=" + response.meta['title'] +' '+ response.meta['artist']
         yield scrapy.Request(url=url, callback=self.parse_melone,meta=info)
