@@ -36,7 +36,7 @@ class QuotesSpider(scrapy.Spider):
         if os.path.isfile(self.save_result_path):
             self.song_db = pd.read_csv(self.save_result_path)
         else:   
-            self.song_db = pd.DataFrame(columns = ['titles' , 'artist', 'lyrics'])
+            self.song_db = pd.DataFrame(columns = ['titles' , 'artist', 'genie_lyrics','melone_lyrics'])
 
         self.genie_lyrics_series = list(self.song_db['genie_lyrics'])        
         self.melone_lyrics_series = list(self.song_db['melone_lyrics'])
