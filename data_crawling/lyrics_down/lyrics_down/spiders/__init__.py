@@ -41,7 +41,7 @@ class QuotesSpider(scrapy.Spider):
     name = "quotes"
 
     def make_url(self):
-        data = pd.read_csv(self.input_list)
+        data = pd.read_csv(self.input_list,sep='\t')
         data = data[['titles','artist']]
         if len(self.song_db) != 0:
             data = pd.concat([data,self.song_db[['titles','artist']]]).drop_duplicates(keep=False)
@@ -71,12 +71,11 @@ class QuotesSpider(scrapy.Spider):
         yield scrapy.Request(url=url, callback=self.parse_lyrics,meta=response.meta)
 
     def parse_lyrics(self,response):
-        lyrics = re.sub('\\r\\n(\\t){1,}','', ' '.join(response.xpath('//*[@id="d_video_summary"]/text()').getall()))
+        lyrics = re.sub('\\r\\n(\\t){1,}','', '%'.join(response.xpath('//*[@id="d_video_summary"]/text()').getall()))
         #raw_data = {'titles':response.meta['title'],'artist':response.meta['artist'],'lyrics':lyrics.replace("\n","")}
-        lyrics = lyrics.replace('\n','%')
         self.title_series.append(response.meta['title'])
         self.artist_series.append(response.meta['artist'])
-        self.lyrics_series.append(lyrics.replace("\n"," ").replace('\r',' '))
+        self.lyrics_series.append(lyrics)
         self.song_db = pd.DataFrame()
         self.song_db['titles'] = pd.Series(self.title_series)
         self.song_db['artist'] = pd.Series(self.artist_series)
