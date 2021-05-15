@@ -71,7 +71,11 @@ class QuotesSpider(scrapy.Spider):
         yield scrapy.Request(url=url, callback=self.parse_lyrics,meta=response.meta)
 
     def parse_lyrics(self,response):
-        lyrics = re.sub('\\r\\n(\\t){1,}','', '%'.join(response.xpath('//*[@id="d_video_summary"]/text()').getall()))
+        data = response.xpath('//*[@id="d_video_summary"]/text()').getall()
+        lyrics = re.sub('\\r\\n(\\t){1,}','', '%'.join(data))
+        if len(data) == 1:
+            lyrics = re.sub('(\\r\\n){1,}','%',lyrics) 
+        
         #raw_data = {'titles':response.meta['title'],'artist':response.meta['artist'],'lyrics':lyrics.replace("\n","")}
         self.title_series.append(response.meta['title'])
         self.artist_series.append(response.meta['artist'])
