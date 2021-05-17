@@ -1,14 +1,14 @@
 from phonemizer import phonemize
 import sys
 
-sentence = sys.stdin.readlines()
+sentence = sys.stdin.readlines()    
 num_cnt = len(sentence)
-with open('data/test_ipa2.txt','w') as f:
+with open('data/seperation_mark_2ipa.txt','w') as f:
     for words in sentence:
         word = words.split(' ')
         for w in word:
-            ipa = phonemize(w,language='ko',backend='espeak',language_switch='remove-flags')
-            if '(' in w and ')' in w:
+            ipa = phonemize(w,language='ko',backend='espeak',language_switch='remove-flags',preserve_punctuation=True,punctuation_marks='%()')
+            '''if '(' in w and ')' in w:
                 f.write('('+ipa+')')
             elif '(' in w:
                 f.write('(')
@@ -16,7 +16,8 @@ with open('data/test_ipa2.txt','w') as f:
             elif ')' in w:
                 f.write(ipa + ')')
             else:
-                f.write(ipa )
+                f.write(ipa )'''
+            f.write(ipa)
         f.write('\n')
         print(num_cnt)
         num_cnt -= 1 
