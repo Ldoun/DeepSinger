@@ -9,10 +9,14 @@ music_dir = sys.argv[1]
 output_dir = sys.argv[2]
 
 files = os.listdir(music_dir)
-for m_file in files:
+for index,m_file in enumerate(files):
+    print(len(files) - index)
+    if os.path.isfile(os.path.join(output_dir,m_file)):
+        continue
+
     data, rate = sf.read(os.path.join(music_dir,m_file)) # load audio
 
-    # measure the loudness first 
+    # measure the loudness first  y
     meter = pyln.Meter(rate) # create BS.1770 meter
     loudness = meter.integrated_loudness(data)
 
