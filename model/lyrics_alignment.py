@@ -2,11 +2,337 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
+from torch.nn.utils.rnn import pack_padded_sequence as pack
+from torch.nn.utils.rnn import pad_packed_sequence as unpack
 
 #1차 senetence level 분할 모델 학습
 #2차 sentence level 분할 모델을 바탕으로 전이학습하듯 phoneme level 분할 학습을 진행함
 # output 모델 구조는 동일하나 모델 파일 2개
+#activation function 체크
+#mask 적용
+
+
+
+
+class   location_sensitive_attention(nn.Module):
+    def __init__(self,encoder_hidden_size,decoder_hidden_size,attention_dim,location_feature_dim,attention_kernel_size):
+        super().__init__()
+        self.F = nn.Conv1d(in_channels=1, out_channels=location_feature_dim,
+                            kernel_size=attention_kernel_size, stride=1, padding=int((attention_kernel_size - 1) / 2),
+                            bias=False)
+        
+        self.W = nn.Linear(decoder_hidden_size, attention_dim, bias=True) # keep one bias
+        self.V = nn.Linear(encoder_hidden_size, attention_dim, bias=False)
+        self.U = nn.Linear(location_feature_dim, attention_dim, bias=False)
+        self.v = nn.Linear(attention_dim, 1, bias=False)
+        self.reset()
+    
+    def reset(self):
+        """Remember to reset at decoder step 0"""
+        self.Vh = None # pre-compute V*h_j due to it is independent from the decoding step i
+    
+    def _cal_energy(self, query, values, cumulative_attention_weights, mask=None):
+        """Calculate energy:
+           e_ij = score(s_i, ca_i-1, h_j) = v tanh(W s_i + V h_j + U f_ij + b)
+           where f_i = F * ca_i-1,
+                 ca_i-1 = sum_{j=1}^{T-1} a_i-1
+        Args:
+            query: [N, Hd], decoder state
+            values: [N, Ti, He], encoder hidden representation
+            cumulative_attention_weights: (batch_size, 1, max_time)
+        Returns:
+            energies: [N, Ti]
+        """
+        # print('query', query.size())
+        # print('values', values.size())
+        #query = query.unsqueeze(1) #[N, 1, Hd], insert time-axis for broadcasting
+        print(query.shape)
+        Ws = self.W(query) #[N, 1, A]
+        if self.Vh is None:
+            self.Vh = self.V(values) #[N, Ti, A]
+        print(cumulative_attention_weights.shape)
+        location_feature = self.F(cumulative_attention_weights) #[N, 32, Ti]
+        # print(location_feature.size())
+        Uf = self.U(location_feature.transpose(1, 2)) #[N, Ti, A]
+        energies = self.v(torch.tanh(Ws + self.Vh + Uf)).squeeze(-1) #[N, Ti]
+        print('W s_i', Ws.size())
+        print('V h_j', self.Vh.size())
+        print('U f_ij', Uf.size())
+        # print('mask', mask)
+        # print('energies', energies)
+        if mask is not None:
+            energies = energies.masked_fill(mask, -np.inf)
+        # print(energies)
+        return energies
+
+    def forward(self, query, values, cumulative_attention_weights, mask=None):
+        """
+        Args:
+            query: [N, Hd], decoder state
+            values: [N, Ti, He], encoder hidden representation
+            mask: [N, Ti]
+        Returns:
+            attention_context: [N, He]
+            attention_weights: [N, Ti]
+        """
+        energies = self._cal_energy(query, values, cumulative_attention_weights, mask) #[N, Ti]
+        attention_weights = F.softmax(energies, dim=1) #[N, Ti]
+        # print('weights', attention_weights)
+        print('energies',energies.shape)
+        print("values",values.shape)
+        print("attention_weights",attention_weights.shape)
+        attention_context = torch.bmm(attention_weights.unsqueeze(1), values) #[N, 1, Ti] bmm [N, Ti, He] -> [N, 1, He]
+        #attention_context = attention_context.squeeze(1) # [N, Ti]
+        # print('context', attention_context.size())
+        return attention_context, attention_weights
+
+
+
+'''class Attention(nn.Module):
+    def __init__(self,hidden_size):
+        super(Attention, self).__init__()
+
+        self.linear = nn.Linear(hidden_size,hidden_size,bias=False)
+        self.softmax = nn.Softmax(dim=-1)
+
+    def forward(self,h_src,h_t_tgt,mask = None):
+        #|h_src| = (batch_size,length,hidden_size)  #encoder의 모든 timestep의 hidden state
+        #|h_t_tgt| = (batch_size,1,hidden_size)  #decoder의 현재 timestep의 hidden state
+        #|mask| = (batch_size,length)  #padding mask
+
+        query = self.linear(h_t_tgt.squeeze(1)).unsqueeze(-1)   #decoder의 현재 hidden state를 바탕으로 query 생성
+        #|query| = (batch_size,hidden_size,1)
+
+        weight = torch.bmm(h_src,query).squeeze(-1) #ecoder의 모든 timestep의 hidden state에 대해 query 비교
+        #|weight| = (batch_size,length)
+
+        if mask is not None:
+            weight.masked_fill_(mask,-float('inf'))  #<pad>에다가는 softmax 확률 0를 위해
+        weight = self.softmax(weight)   #attention score 구함 loss구할 때 또다시 사용예정
+        #현재 timestep에 영향을 많이 끼치는 timestep(단어)의 소프트맥스 확률이 크게 나타남
+
+        context_vector = torch.bmm(weight.unsqueeze(1),h_src) # attention score가 곱해진 encoder의 모든 hidden state(context vector)
+        #|context_vector| = (batch_size,1,hidden_size)
+
+        return context_vector, weight'''
+    
+class ConvolutionBlock(nn.Module):
+    def __init__(self,in_ch,out_ch,kernel_size,padding):
+        super().__init__()
+        self.conv1d = nn.Conv1d(in_channels=in_ch,out_channels=out_ch,kernel_size=kernel_size,padding=padding)
+        self.b_norm = nn.BatchNorm1d(num_features=out_ch)
+        self.relu = nn.ReLU()
+
+    def forward(self,x):
+        x = self.conv1d(x)
+        x = self.b_norm(x)
+        x = self.relu(x)
+        return x
+
+class mel_encoder(nn.Module):
+    def __init__(self, in_ch = 128,out_ch=512,kernel=9,pad=4,drop_p=0.1):
+        super().__init__()
+        
+        self.prenet = nn.Sequential(
+            #3-layer conv1d hidden_size:512 kernel_size:9
+            ConvolutionBlock(in_ch=in_ch,out_ch=out_ch,kernel_size=kernel,padding=pad),
+            ConvolutionBlock(in_ch=out_ch,out_ch=out_ch,kernel_size=kernel,padding=pad),
+            ConvolutionBlock(in_ch=out_ch,out_ch=out_ch,kernel_size=kernel,padding=pad),
+        )
+
+        #bi-diretional LSTM hidden_size:512
+        self.rnn = nn.LSTM(
+            input_size=out_ch,
+            hidden_size=int(out_ch/2),
+            batch_first=True,
+            bidirectional=True,
+            dropout = drop_p
+        )
+
+
+    def forward(self,mel,length):
+        if length is not None: 
+            x = mel
+            packed = pack(x,length,batch_first=True) # enforce_sorted = True tensor내 정렬 필요
+        else:
+            x = mel
+
+        x = self.prenet(x)  # (bs,128,length)   
+        x = x.transpose(1,2) #(bs,512,length)
+        y,h = self.rnn(x) #(bs,length,512)
+        
+        if length is not None:
+            y, _ =  unpack(x,batch_first=True)
+            pass
+
+        return y,h #(bs,length,512)
+
+
+class phoneme_decoder(nn.Module):
+    def __init__(self,p_embedding=512,encoder_hs = 512,hidden_size=1024,drop_p = 0.1):
+        super().__init__()
+        #2-layer LSTM hidden_size: 1024
+        self.rnn = nn.LSTM(
+            input_size=p_embedding + encoder_hs,
+            hidden_size=hidden_size,
+            num_layers=2,
+            batch_first=True,
+            bidirectional=False,
+            dropout = drop_p
+        )
+    
+    def forward(self,emb_tgt,attention_context_vector,h_t_1):
+        #emb_tgt 이전 time step의 y의 임베딩 벡터
+        #attention_context_vector encoder attention applied context vector
+        #h_t_1 이전 타임스텝의 디코더 hs,cs
+        
+        batch_size = emb_tgt.size(0)
+        hidden_size = h_t_1[0].size(-1)
+
+        #if attention_context_vector is None:
+            #first time-step
+            #attention_context_vector = emb_tgt.new(batch_size,1,hidden_size).zero_()
+            #해당 tensor와 같은 type,디바이스로 tensor를 만들어주는 함수
+
+        #emb_tgt needs to be size(bs,512)
+        x = torch.cat([emb_tgt,attention_context_vector],dim = -1)
+        #|x| = (batch_size,1,word_vec_size + hidden_size)
+    
+        y,h = self.rnn(x,h_t_1)
+        #|y| = (batch_size,1,hidden_size)
+        #|h[0]| = (num_layers,batch_size,hidden_size)
+
+        return y,h
+
+class Generator(nn.Module):
+    def __init__(self,input_size,output_size):
+        super().__init__()
+
+        self.output = nn.Linear(input_size,out_features= output_size) 
+        self.softmax = nn.Softmax(dim = -1) #cross-entrophy 사용
+
+    def forward(self,x):
+        y = self.softmax(self.output(x))
+        #|y| = (batch_size,length,ouput_size(vocab_size))
+        return y
 
 class alignment_model(nn.Module):
-    def __init__(self):
+    def __init__(
+        self,
+        input_size=128,
+        p_vec_size=512,
+        en_hidden_size=512,
+        de_hidden_size=1024,
+        num_embeddings=512,
+        attention_dim=256,
+        drop_p=0.1,
+        vocab_size = None
+    ):
         super().__init__()
+
+        self.decoder_hs = de_hidden_size
+        self.encoder_hs = en_hidden_size
+        self.encoder = mel_encoder(in_ch = input_size,out_ch=en_hidden_size,kernel=9,pad=4,drop_p=drop_p)
+        self.decoder = phoneme_decoder(p_embedding=num_embeddings,hidden_size=de_hidden_size,encoder_hs=en_hidden_size,drop_p = drop_p)
+        self.attention = location_sensitive_attention(
+                            encoder_hidden_size=en_hidden_size,
+                            decoder_hidden_size=de_hidden_size,
+                            attention_dim = attention_dim,
+                            location_feature_dim = 128,
+                            attention_kernel_size = 31
+        )
+        self.p_embedding = nn.Embedding(num_embeddings=num_embeddings,embedding_dim=512)
+        self.concat = nn.Linear(en_hidden_size + de_hidden_size,1024)
+        self.generator = Generator(input_size=1024,output_size=vocab_size)
+
+    def generate_mask(self,x,length):
+        mask = []
+
+        max_length = max(length)
+        for l in length:
+            if max_length - l > 0:
+                mask += [torch.cat([x.new_ones(1,l).zero_(),
+                                    x.new_ones(1,(max_length - l))]
+                                    ,dim = -1)]
+
+            else:
+                mask += [x.new_ones(1,l).zero_()]
+
+        mask = torch.cat(mask,dim=0).bool()
+        return mask
+    
+
+    def forward(self,mel,ipa):
+        batch_size = ipa.size(0)
+
+        mask = None
+        x_length = None
+        if isinstance(mel,tuple):
+            x,x_length = mel #torch text에서 x_length
+            mask = self.generate_mask(x,x_length)
+            #|mask| = (batch_size,length)
+        else:
+            x = mel
+        
+        #|mel| = (bs,128,length)
+        #|ipa| = (bs,length,vocab)
+
+        mel_length = mel.size(2)
+
+        if isinstance(ipa,tuple):
+            ipa = ipa[0]
+    
+        h_src, _ = self.encoder(x,x_length)
+        #|h_src| = (batch_size,length,hidden_size)
+        #|h_0_tgt| = (num_layers * 2,batch_size, hidden_size / 2)
+
+        #h_0_tgt = self.fast_merge_encoder_hidden(h_0_tgt)
+        emb_tgt = self.p_embedding(ipa)
+        print(emb_tgt.shape)
+        #|emb_tgt| = (batch_size,length,word_vec_size)
+
+        h_tilde = []
+
+        decoder_hidden = (
+            h_src.new(2,h_src.size(0),self.decoder_hs).zero_(),
+            h_src.new(2,h_src.size(0),self.decoder_hs).zero_(),
+        )
+        self.attention_context_vector = emb_tgt.new(batch_size,1,self.encoder_hs).zero_()
+        self.cumulative_attention_weights = h_src.new(h_src.size(0),mel_length).zero_()
+
+        for t in range(ipa.size(1)):
+            emb_t = emb_tgt[:,t,:].unsqueeze(1)
+            #print(t)
+            #print("emn_t:",emb_t.shape)
+            print("h_src:",h_src.shape)
+            #emb_t = emb_t.unsqueeze(1)
+            cumulative_attention = self.cumulative_attention_weights.unsqueeze(1)
+            #|emb_t| = (batch_size,1,word_vec_size)
+            #|h_t_tilde| = (batch_size,1,hidden_size)
+            #|attention_context_vector| = (batch_size,1,encoder_hidden_size)
+
+            decoder_output,decoder_hidden = self.decoder(emb_t,self.attention_context_vector,decoder_hidden)
+
+            #|decoder_output| = (batch_size,1,hidden_size)
+            #|decoder_hidden| = (n_layer,batch_size,hidden_size)
+
+            self.attention_context_vector, self.attention_weights = self.attention(decoder_output,h_src,cumulative_attention,mask)
+            self.cumulative_attention_weights = self.cumulative_attention_weights + self.attention_weights
+
+            print('decoder_output',decoder_output.shape)
+            print('attention_context_vector',self.attention_context_vector.shape)
+            h_t_tilde = self.concat(torch.cat([decoder_output,self.attention_context_vector],dim=-1))
+            #|h_t_tilde| = (batch_size,1,hidden_size)
+            print('h_t_tilde', h_t_tilde.shape)
+
+            h_tilde += [h_t_tilde]
+
+        h_tilde = torch.cat(h_tilde,dim=1)
+        #|h_t_tilde| = (batch_size,length,hidden_size)
+
+        y_hat = self.generator(h_tilde)
+        #|y_hat| = (batch_size,length,ouput_size)
+
+        return y_hat
+
+        
