@@ -268,8 +268,7 @@ class alignment_model(nn.Module):
         mask = None
         x_length = None
         if isinstance(mel,tuple):
-            x,x_length = mel #torch text에서 x_length
-            mask = self.generate_mask(x,x_length)
+            x,x_length,mask = mel #torch text에서 x_length
             #|mask| = (batch_size,length)
         else:
             x = mel
