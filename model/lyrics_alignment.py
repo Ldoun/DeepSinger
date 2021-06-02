@@ -10,7 +10,7 @@ from torch.nn.utils.rnn import pad_packed_sequence as unpack
 # output 모델 구조는 동일하나 모델 파일 2개
 #activation function 체크
 #mask 적용
-
+#mel start frame implement
 
 
 
@@ -150,21 +150,23 @@ class mel_encoder(nn.Module):
         )
 
 
-    def forward(self,mel,length):
-        if length is not None: 
-            x = mel
-            packed = pack(x,length,batch_first=True) # enforce_sorted = True tensor내 정렬 필요
-        else:
-            x = mel
+    def forward(self,mel,hidden,length = None):
+        x = mel         
 
         x = self.prenet(x)  # (bs,128,length)   
         x = x.transpose(1,2) #(bs,512,length)
-        y,h = self.rnn(x) #(bs,length,512)
-        
-        if length is not None:
-            y, _ =  unpack(x,batch_first=True)
-            pass
 
+        if length is not None: 
+            x = pack(x,length,batch_first=True) # enforce_sorted = True tensor내 정렬 필요
+            
+        if hidden is None:
+            y,h = self.rnn(x) #(bs,length,512)
+        else:
+            y,h = self.rnn(x,hidden)
+
+        if length is not None:
+            y, _ =  unpack(y,batch_first=True)
+          
         return y,h #(bs,length,512)
 
 
@@ -262,13 +264,12 @@ class alignment_model(nn.Module):
         return mask
     
 
-    def forward(self,mel,ipa):
+    def forward(self, mel,ipa, en_hidden = None,de_hidden = None):
         batch_size = ipa.size(0)
 
         mask = None
-        x_length = None
         if isinstance(mel,tuple):
-            x,x_length,mask = mel #torch text에서 x_length
+            x,mask = mel #torch text에서 x_length
             #|mask| = (batch_size,length)
         else:
             x = mel
@@ -281,7 +282,7 @@ class alignment_model(nn.Module):
         if isinstance(ipa,tuple):
             ipa = ipa[0]
     
-        h_src, _ = self.encoder(x,x_length)
+        h_src, encoder_hidden = self.encoder(x,en_hidden)
         #|h_src| = (batch_size,length,hidden_size)
         #|h_0_tgt| = (num_layers * 2,batch_size, hidden_size / 2)
 
@@ -291,11 +292,17 @@ class alignment_model(nn.Module):
         #|emb_tgt| = (batch_size,length,word_vec_size)
 
         h_tilde = []
+        attention = []
+        
+        if de_hidden is None:
+            decoder_hidden = (
+                h_src.new(2,h_src.size(0),self.decoder_hs).zero_(),
+                h_src.new(2,h_src.size(0),self.decoder_hs).zero_(),
+            )
 
-        decoder_hidden = (
-            h_src.new(2,h_src.size(0),self.decoder_hs).zero_(),
-            h_src.new(2,h_src.size(0),self.decoder_hs).zero_(),
-        )
+        else:
+            decoder_hidden = de_hidden
+        
         self.attention_context_vector = emb_tgt.new(batch_size,1,self.encoder_hs).zero_()
         self.cumulative_attention_weights = h_src.new(h_src.size(0),mel_length).zero_()
 
@@ -317,7 +324,7 @@ class alignment_model(nn.Module):
 
             self.attention_context_vector, self.attention_weights = self.attention(decoder_output,h_src,cumulative_attention,mask)
             self.cumulative_attention_weights = self.cumulative_attention_weights + self.attention_weights
-
+            
             print('decoder_output',decoder_output.shape)
             print('attention_context_vector',self.attention_context_vector.shape)
             h_t_tilde = self.concat(torch.cat([decoder_output,self.attention_context_vector],dim=-1))
@@ -325,13 +332,15 @@ class alignment_model(nn.Module):
             print('h_t_tilde', h_t_tilde.shape)
 
             h_tilde += [h_t_tilde]
+            attention += [self.attention_weights]
 
         h_tilde = torch.cat(h_tilde,dim=1)
+        attention = torch.stack(attention,dim=1)
         #|h_t_tilde| = (batch_size,length,hidden_size)
 
         y_hat = self.generator(h_tilde)
         #|y_hat| = (batch_size,length,ouput_size)
 
-        return y_hat
+        return y_hat,attention,encoder_hidden,decoder_hidden
 
         
