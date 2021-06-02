@@ -21,6 +21,7 @@ import torchaudio
 #Tokenizer 코드 삽입
 #Test
 #sample rate check 22050
+#BucketIterator 작동 확인
 
 
 class LJSpeechDataset(data.Dataset):
@@ -173,14 +174,14 @@ class TextAudioCollate(object):
             print(i)
             mel_padded[i, :, :mel.size(1)] = mel
             output_lengths[i] = mel.size(1)
-        mel_padded = mel_padded.transpose(1, 2)  # [N, To, D]
+        #mel_padded = mel_padded.transpose(1, 2)  # [N, To, D]
 
         # Generate mask
         encoder_mask = get_mask_from_lengths(input_lengths)
         decoder_mask = get_mask_from_lengths(output_lengths)
         #print('encoder_length:',input_lengths)
         #print('decoder_length:',output_lengths)
-        return (mel_padded,output_lengths,decoder_mask) ,(text_padded , encoder_mask)
+        return (mel_padded,decoder_mask) ,(text_padded , output_lengths)
 
 
 def get_mask_from_lengths(lengths):
@@ -250,9 +251,17 @@ if __name__ == '__main__':
         print(len(batch))
         print('first:',batch[0])
         print('-'*80)
-        print(batch[0][0].shape)
+        '''print(batch[0][0].shape)
         print(batch[0][1])
         print(batch[0][2].shape)
+        print(batch[1][0].shape)
+        print(batch[1][1].shape)
+        print(batch[1][0])'''
+        print(batch[0][0] )
+        print(batch[0][1])
+        print(batch[0][2])
+        print(batch[0][2].shape)
+        print(batch[0][0][:,:,:100].shape)
         '''print('first:',batch[0].shape)
         print('second:',batch[1].shape)
         print('first_mask',batch[2])

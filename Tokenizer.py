@@ -1,9 +1,9 @@
 class tokenizer(object):
     def __init__(self):
         super().__init__()
-        self.eos = 0
+        self.eos = 2
         self.sos = 1
-        self.pad = 2
+        self.pad = 0
         
         self.vocab = {'<PAD>':self.pad,'<SOS>':self.sos,'<EOS>':self.eos}
         
