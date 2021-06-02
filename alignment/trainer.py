@@ -7,7 +7,7 @@ import torch.nn.utils as torch_utils
 from  torch.cuda.amp import autocast
 from torch.cuda.amp import GradScaler
 
-from utils import get_grad_norm,get_parameter_norm,detach_hidden,guided_attentions # change utils -> DeepSinger.utils
+from alignment.utils import get_grad_norm,get_parameter_norm,detach_hidden,guided_attentions # change utils -> DeepSinger.utils
 from ignite.contrib.handlers.tensorboard_logger import *
 
 from ignite.engine import Engine
