@@ -46,34 +46,37 @@ class MaximumLikelihoodEstimationEngine(Engine):
     @staticmethod
     def train(engine, mini_batch):
         device = next(engine.model.parameters()).device
-        x,mask = mini_batch.src[0],mini_batch.src[1] #tensor,length,mask
-        mini_batch.tgt = (mini_batch.tgt[0],mini_batch.tgt[1])
+        x,mask = mini_batch[0][0],mini_batch[0][1] #tensor,length,mask
+        mini_batch_tgt = (mini_batch[1][0],mini_batch[1][1])
         
-        y = mini_batch.tgt[0][:,1:]  #<BOS> 제외 정답문장 1번 단어부터 비교
+        y = mini_batch_tgt[0][:,1:]  #<BOS> 제외 정답문장 1번 단어부터 비교
         #|x| = (batch_size,128,length)
         #|y| = (batch_size,length)
         x_length = x.size(2)
         y_length = y.size(1)
-        print(x.size())
-        print(y.size())
+        print('x:',x.size())
+        print('y:',y.size())
         encoder_hidden,decoder_hidden = None,None 
         loss_list = []
         chunk_index = 0
         start_index,attention_index = 0,0
-        input_y = mini_batch.tgt[0][:,:-1]
+        input_y = mini_batch_tgt[0][:,:-1]
+        print(engine.max_target_ratio)
         
         with autocast():
-            while chunk_index < engine.max_target_ratio * y_length:             
+            while chunk_index < engine.max_target_ratio * y_length:      
                 engine.model.train()
                 engine.optimizer.zero_grad()
 
                 chunk_y = input_y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
+                chunk_y_label = y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
+                
                 chunk_length = []
                 start_index = start_index + attention_index
 
                 chunk_x = x[:,:,start_index:start_index + engine.config.tbtt_step * x_length//y_length].to(device)
-                chunk_mask = mask[:,start_index:start_index + engine.config.tbtt_step * x_length//y_length]
-
+                chunk_mask = mask[:,start_index:start_index + engine.config.tbtt_step * x_length//y_length].to(device)
+                print('chunk_x:',chunk_x.shape)
                 if encoder_hidden is None:
                     y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),chunk_y)# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
 
@@ -87,7 +90,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
 
                 loss = engine.crit(
                     y_hat.contiguous().view(-1,y_hat.size(-1)),
-                    y.contiguous().view(-1)
+                    chunk_y_label.contiguous().view(-1)
                 )
 
                 soft_mask = guided_attentions(mini_attention.shape,engine.config.W)
@@ -114,7 +117,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     #norm_type=2,
                 )'''#gradient clipping           
                     
-        word_count = int(mini_batch.tgt[1].sum())
+        word_count = int(mini_batch_tgt[1].sum())
         p_norm = float(get_parameter_norm(engine.model.parameters())) #모델의 복잡도 학습됨에 따라 커져야함
         g_norm = float(get_grad_norm(engine.model.parameters()))    #클수록 뭔가 배우는게 변하는게 많다 (학습의 안정성)
 
@@ -138,16 +141,16 @@ class MaximumLikelihoodEstimationEngine(Engine):
 
         with torch.no_grad():
             device = next(engine.model.parameters()).device 
-            mini_batch.src = (mini_batch.src[0].to(device),mini_batch.src[1])
-            mini_batch.tgt = (mini_batch.tgt[0].to(device),mini_batch.tgt[1])
+            mini_batch_src = (mini_batch[0][0].to(device),mini_batch[0][1].to(device))
+            mini_batch_tgt = (mini_batch[1][0].to(device),mini_batch[1][1])
             
-            x, y = mini_batch.src, mini_batch.tgt[:,1:]
+            x, y = mini_batch_src, mini_batch_tgt[0][:,1:]
             print(x[0].size())
             #|x| = (batch_size,length)
             #|y| = (batch_size,length)
             
             with autocast():
-                y_hat,mini_attention,_,_ = engine.model(mini_batch.src,mini_batch.tgt[0][:,:-1])# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
+                y_hat,mini_attention,_,_ = engine.model(mini_batch_src,mini_batch_tgt[0][:,:-1])# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
 
                 #|y_hat| = (batch_size,n_class)
                 
@@ -161,7 +164,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 attn_loss = -(soft_mask * mini_attention).mean() #sum or mean?
                 loss = loss + attn_loss
 
-        word_count = int(mini_batch.tgt[1].sum())
+        word_count = int(mini_batch_tgt[1].sum())
         loss = float(loss/word_count)
         ppl = np.exp(loss)
 
@@ -176,16 +179,16 @@ class MaximumLikelihoodEstimationEngine(Engine):
 
         with torch.no_grad():
             device = next(engine.model.parameters()).device 
-            mini_batch.src = (mini_batch.src[0].to(device),mini_batch.src[1])
-            mini_batch.tgt = (mini_batch.tgt[0].to(device),mini_batch.tgt[1])
+            mini_batch_src = (mini_batch[0][0].to(device),mini_batch[0][1].to(device))
+            mini_batch_tgt = (mini_batch[1][0].to(device),mini_batch[1][1])
             
-            x, y = mini_batch.src, mini_batch.tgt[:,1:]
+            x, y = mini_batch_src, mini_batch_tgt[0][:,1:]
             print(x[0].size())
             #|x| = (batch_size,length)
             #|y| = (batch_size,length)
             
             with autocast():
-                y_hat,mini_attention,_,_ = engine.model(mini_batch.src,mini_batch.tgt[0][:,:-1])# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
+                y_hat,mini_attention,_,_ = engine.model(mini_batch_src,mini_batch_tgt[0][:,:-1])# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
 
                 #|y_hat| = (batch_size,n_class)
                 
@@ -199,7 +202,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 attn_loss = -(soft_mask * mini_attention).mean() #sum or mean?
                 loss = loss + attn_loss
                 
-        word_count = int(mini_batch.tgt[1].sum())
+        word_count = int(mini_batch_tgt[1].sum())
         loss = float(loss/word_count)
         ppl = np.exp(loss)
 
@@ -267,7 +270,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
             engine.best_model = deepcopy(engine.model.state_dict())
         
     @staticmethod
-    def save_model(engine, train_engine, config,src_vocab,tgt_vocab):
+    def save_model(engine, train_engine, config,vocab):
         avg_train_loss = train_engine.state.metrics['loss']
         avg_valid_loss = engine.state.metrics['loss']
 
@@ -289,8 +292,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 'model':engine.model.state_dict(),
                 'opt': train_engine.optimizer.state_dict(),
                 'config': config,
-                'src_vocab' : src_vocab,
-                'tgt_vocab' : tgt_vocab,
+                'vocab' : vocab,
             },model_fn
             )
 
@@ -306,9 +308,7 @@ class SingleTrainer():
 
     def train(
         self,
-        model,crit,optimizer,train_loader,valid_loader,
-        src_vocab,tgt_vocab,
-        n_epochs,
+        model,crit,optimizer,train_loader,valid_loader,vocab,n_epochs,
         lr_scheduler = None
     ):
         self.train_engine = self.target_engine_class(
@@ -368,7 +368,7 @@ class SingleTrainer():
             Events.EPOCH_COMPLETED, #event
             self.target_engine_class.save_model, # func
             self.train_engine, self.config,
-            src_vocab,tgt_vocab #args
+            vocab #args
         )
 
         self.train_engine.run(

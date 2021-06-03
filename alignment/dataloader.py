@@ -26,7 +26,7 @@ import torchaudio
 
 class LJSpeechDataset(data.Dataset):
     
-    def __init__(self, wav_path,tsv_file='data/metadata.csv',tok = None,
+    def __init__(self, wav_path,tsv_file='data/metadata.csv',tok = None,set_vocab = True,
                  audio_transformer=torchaudio.transforms.MelSpectrogram(sample_rate=22050,n_fft=1024,hop_length=256),
                  sample_rate=22050, sort=True):
         self.wav_path = wav_path
@@ -41,8 +41,7 @@ class LJSpeechDataset(data.Dataset):
             self.metadata['length'] = self.metadata['titles'].apply(
                     lambda x: librosa.get_duration(filename=f'{wav_path}/{x}.wav'))
             self.metadata.sort_values(by=['length'], inplace=True, ascending=False)
-        if tok:
-            self._set_vocab()
+        
 
     def __getitem__(self, index):
         """
@@ -70,18 +69,13 @@ class LJSpeechDataset(data.Dataset):
 
     def _get_audio(self, index):
         filename = self.metadata.iloc[index]['titles']
-        print(f'{self.wav_path}/{filename}.wav')
+        #print(f'{self.wav_path}/{filename}.wav')
         audio,sr = torchaudio.load(f'{self.wav_path}/{filename}.wav')
         if self.audio_transformer:
             audio = self.audio_transformer(audio)
         
         return audio.squeeze(0)
     
-    def _set_vocab(self):
-        for i in self.metadata['lyrics'].values:
-            self.tok.make_vocab(i)
-        
-        print(self.tok.vocab)
 
 
 class RandomBucketBatchSampler(object):
@@ -170,8 +164,8 @@ class TextAudioCollate(object):
         output_lengths = torch.LongTensor(len(batch))
         for i in range(len(ids_sorted_decreasing)):
             mel = batch[ids_sorted_decreasing[i]][1]
-            print('mel:',mel.shape)
-            print(i)
+            #print('mel:',mel.shape)
+            #print(i)
             mel_padded[i, :, :mel.size(1)] = mel
             output_lengths[i] = mel.size(1)
         #mel_padded = mel_padded.transpose(1, 2)  # [N, To, D]
@@ -191,13 +185,13 @@ def get_mask_from_lengths(lengths):
     mask = torch.zeros(N, T)
     for i in range(N):
         mask[i, lengths[i]:] = 1
-    return mask.byte()
+    return mask.bool()
 
 
 if __name__ == '__main__':
     # Test LJSpeechDataset
     import sys
-    from Tokenizer import tokenizer
+    from alignment.Tokenizer import tokenizer
     import os
     wav_path = './sample'
     tsv_file = './sample/sample.tsv'

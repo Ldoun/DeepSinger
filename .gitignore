@@ -5,7 +5,7 @@ result.csv
 *.txt
 *.tsv
 *.csv
-
+*.pth
 sample
 
 # Byte-compiled / optimized / DLL files

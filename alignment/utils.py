@@ -43,10 +43,13 @@ def guided_attention( W,max_N, max_T): #w 54.68827160493827
 
 def guided_attentions(size,W):
     bs,text_length,mel_length = size
-    W = np.zeros((bs, text_length, mel_length), dtype=np.float32)
+    A = np.zeros((bs, text_length, mel_length), dtype=np.float32)
     for b in range(bs):
-        W[b] = guided_attention(W,text_length,mel_length).T
-    return W
+        A[b] = guided_attention(W,text_length,mel_length)
+
+    #print('A',A.shape)
+    
+    return A
     
 def detach_hidden(hidden):
     """Cut backpropagation graph.

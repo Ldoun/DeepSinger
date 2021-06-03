@@ -1,18 +1,22 @@
 import pickle
 import os
+import pandas as pd
 
 class tokenizer(object):
-    def __init__(self,vocab_f):
+    def __init__(self,v):
         super().__init__()
         self.eos = 2
         self.sos = 1
         self.pad = 0
         
         self.vocab = {'<PAD>':self.pad,'<SOS>':self.sos,'<EOS>':self.eos}
-        self.vocab_f = vocab_f
+        if v is not None:
+            self.vocab = vocab
+
+        '''self.vocab_f = vocab_f
         if os.path.isfile(self.vocab_f):
             with open(self.vocab_f, 'rb') as fr:
-                self.vocab = pickle.load(fr)
+                self.vocab = pickle.load(fr)'''
         
     def get_idx(self,words):
         if isinstance(words,list):
@@ -53,5 +57,15 @@ class tokenizer(object):
     def save(self):
         with open(self.vocab_f,'wb') as f:
             pickle.dump(self.vocab, f)
+
+    def set_vocab(self,tsv_file):
+        metadata = pd.read_csv(f'{tsv_file}', sep='\t',
+                                    usecols=['titles', 'lyrics'],
+                                    ) 
+
+        for i in metadata['lyrics'].values:
+            self.make_vocab(i)
+        
+        print(self.vocab)
 
     

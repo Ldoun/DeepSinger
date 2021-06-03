@@ -46,18 +46,18 @@ class   location_sensitive_attention(nn.Module):
         # print('query', query.size())
         # print('values', values.size())
         #query = query.unsqueeze(1) #[N, 1, Hd], insert time-axis for broadcasting
-        print(query.shape)
+        #print(query.shape)
         Ws = self.W(query) #[N, 1, A]
         if self.Vh is None:
             self.Vh = self.V(values) #[N, Ti, A]
-        print(cumulative_attention_weights.shape)
+        #print(cumulative_attention_weights.shape)
         location_feature = self.F(cumulative_attention_weights) #[N, 32, Ti]
         # print(location_feature.size())
         Uf = self.U(location_feature.transpose(1, 2)) #[N, Ti, A]
         energies = self.v(torch.tanh(Ws + self.Vh + Uf)).squeeze(-1) #[N, Ti]
-        print('W s_i', Ws.size())
-        print('V h_j', self.Vh.size())
-        print('U f_ij', Uf.size())
+        #print('W s_i', Ws.size())
+        #print('V h_j', self.Vh.size())
+        #print('U f_ij', Uf.size())
         # print('mask', mask)
         # print('energies', energies)
         if mask is not None:
@@ -78,9 +78,9 @@ class   location_sensitive_attention(nn.Module):
         energies = self._cal_energy(query, values, cumulative_attention_weights, mask) #[N, Ti]
         attention_weights = F.softmax(energies, dim=1) #[N, Ti]
         # print('weights', attention_weights)
-        print('energies',energies.shape)
-        print("values",values.shape)
-        print("attention_weights",attention_weights.shape)
+        #print('energies',energies.shape)
+        #print("values",values.shape)
+        #print("attention_weights",attention_weights.shape)
         attention_context = torch.bmm(attention_weights.unsqueeze(1), values) #[N, 1, Ti] bmm [N, Ti, He] -> [N, 1, He]
         #attention_context = attention_context.squeeze(1) # [N, Ti]
         # print('context', attention_context.size())
@@ -171,11 +171,11 @@ class mel_encoder(nn.Module):
 
 
 class phoneme_decoder(nn.Module):
-    def __init__(self,p_embedding=512,encoder_hs = 512,hidden_size=1024,drop_p = 0.1):
+    def __init__(self,embedding_dim=512,encoder_hs = 512,hidden_size=1024,drop_p = 0.1):
         super().__init__()
         #2-layer LSTM hidden_size: 1024
         self.rnn = nn.LSTM(
-            input_size=p_embedding + encoder_hs,
+            input_size=embedding_dim + encoder_hs,
             hidden_size=hidden_size,
             num_layers=2,
             batch_first=True,
@@ -199,7 +199,7 @@ class phoneme_decoder(nn.Module):
         #emb_tgt needs to be size(bs,512)
         x = torch.cat([emb_tgt,attention_context_vector],dim = -1)
         #|x| = (batch_size,1,word_vec_size + hidden_size)
-    
+
         y,h = self.rnn(x,h_t_1)
         #|y| = (batch_size,1,hidden_size)
         #|h[0]| = (num_layers,batch_size,hidden_size)
@@ -212,7 +212,7 @@ class Generator(nn.Module):
 
         self.output = nn.Linear(input_size,out_features= output_size) 
         self.softmax = nn.Softmax(dim = -1) #cross-entrophy 사용
-
+        
     def forward(self,x):
         y = self.softmax(self.output(x))
         #|y| = (batch_size,length,ouput_size(vocab_size))
@@ -222,28 +222,29 @@ class alignment_model(nn.Module):
     def __init__(
         self,
         input_size=128,
-        p_vec_size=512,
+        vocab_size = None,
+        emb_hs=512,
         en_hidden_size=512,
         de_hidden_size=1024,
-        num_embeddings=512,
         attention_dim=256,
+        location_feature_dim = 128,
         drop_p=0.1,
-        vocab_size = None
+        
     ):
         super().__init__()
 
         self.decoder_hs = de_hidden_size
         self.encoder_hs = en_hidden_size
         self.encoder = mel_encoder(in_ch = input_size,out_ch=en_hidden_size,kernel=9,pad=4,drop_p=drop_p)
-        self.decoder = phoneme_decoder(p_embedding=num_embeddings,hidden_size=de_hidden_size,encoder_hs=en_hidden_size,drop_p = drop_p)
+        self.decoder = phoneme_decoder(embedding_dim=emb_hs,hidden_size=de_hidden_size,encoder_hs=en_hidden_size,drop_p = drop_p)
         self.attention = location_sensitive_attention(
                             encoder_hidden_size=en_hidden_size,
                             decoder_hidden_size=de_hidden_size,
                             attention_dim = attention_dim,
-                            location_feature_dim = 128,
+                            location_feature_dim = location_feature_dim,
                             attention_kernel_size = 31
         )
-        self.p_embedding = nn.Embedding(num_embeddings=num_embeddings,embedding_dim=512)
+        self.p_embedding = nn.Embedding(num_embeddings=vocab_size,embedding_dim=emb_hs)
         self.concat = nn.Linear(en_hidden_size + de_hidden_size,1024)
         self.generator = Generator(input_size=1024,output_size=vocab_size)
 
@@ -277,7 +278,7 @@ class alignment_model(nn.Module):
         #|mel| = (bs,128,length)
         #|ipa| = (bs,length,vocab)
 
-        mel_length = mel.size(2)
+        mel_length = x.size(2)
 
         if isinstance(ipa,tuple):
             ipa = ipa[0]
@@ -288,7 +289,7 @@ class alignment_model(nn.Module):
 
         #h_0_tgt = self.fast_merge_encoder_hidden(h_0_tgt)
         emb_tgt = self.p_embedding(ipa)
-        print(emb_tgt.shape)
+        #print(emb_tgt.shape)
         #|emb_tgt| = (batch_size,length,word_vec_size)
 
         h_tilde = []
@@ -310,7 +311,7 @@ class alignment_model(nn.Module):
             emb_t = emb_tgt[:,t,:].unsqueeze(1)
             #print(t)
             #print("emn_t:",emb_t.shape)
-            print("h_src:",h_src.shape)
+            #print("h_src:",h_src.shape)
             #emb_t = emb_t.unsqueeze(1)
             cumulative_attention = self.cumulative_attention_weights.unsqueeze(1)
             #|emb_t| = (batch_size,1,word_vec_size)
@@ -325,11 +326,11 @@ class alignment_model(nn.Module):
             self.attention_context_vector, self.attention_weights = self.attention(decoder_output,h_src,cumulative_attention,mask)
             self.cumulative_attention_weights = self.cumulative_attention_weights + self.attention_weights
             
-            print('decoder_output',decoder_output.shape)
-            print('attention_context_vector',self.attention_context_vector.shape)
+            #print('decoder_output',decoder_output.shape)
+            #print('attention_context_vector',self.attention_context_vector.shape)
             h_t_tilde = self.concat(torch.cat([decoder_output,self.attention_context_vector],dim=-1))
             #|h_t_tilde| = (batch_size,1,hidden_size)
-            print('h_t_tilde', h_t_tilde.shape)
+            #print('h_t_tilde', h_t_tilde.shape)
 
             h_tilde += [h_t_tilde]
             attention += [self.attention_weights]
