@@ -150,11 +150,11 @@ class mel_encoder(nn.Module):
             dropout = drop_p
         )
 
-
     def forward(self,mel,hidden,length = None):
         x = mel         
 
-        x = self.prenet(x)  # (bs,128,length)   
+        x = self.prenet(x)  # (bs,128,length)  
+        print('prenet',x.shape) 
         x = x.transpose(1,2) #(bs,512,length)
 
         if length is not None: 
