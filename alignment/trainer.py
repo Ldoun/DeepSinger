@@ -61,7 +61,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         chunk_index = 0
         start_index,attention_index = 0,0
         input_y = mini_batch_tgt[0][:,:-1]
-        print(engine.max_target_ratio)
+        #print(engine.max_target_ratio)
         
         with autocast():
             while chunk_index < engine.max_target_ratio * y_length:      
