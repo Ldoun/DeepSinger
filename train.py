@@ -250,12 +250,12 @@ def main(config, model_weight=None, opt_weight=None, vocab = None):
     if config.multi_gpu:
         model = nn.DataParallel(model)
         model.cuda()
-        crit.cuda(config.gpu_id)
+        crit.cuda()
 
 
     if config.gpu_id >= 0 and not config.multi_gpu:
         model.cuda(config.gpu_id)
-        
+        crit.cuda(config.gpu_id)
   
 
     optimizer = get_optimizer(model, config)
