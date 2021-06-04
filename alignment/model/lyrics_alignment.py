@@ -62,8 +62,8 @@ class   location_sensitive_attention(nn.Module):
         # print('mask', mask)
         # print('energies', energies)
         if mask is not None:
-            print('energies',energies.shape)
-            print('mask',mask.shape)
+            #print('energies',energies.shape)
+            #print('mask',mask.shape)
             energies = energies.masked_fill(mask, -np.inf)
         # print(energies)
         return energies
