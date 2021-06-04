@@ -48,7 +48,7 @@ class tokenizer(object):
         return result
 
     def make_vocab(self,sentences):
-        print(sentences)
+        #print(sentences)
         for word in sentences.split(' '):
             if isinstance(word,str):
                 if word not in self.vocab.keys():
@@ -66,6 +66,6 @@ class tokenizer(object):
         for i in metadata['lyrics'].values:
             self.make_vocab(i)
         
-        print(self.vocab)
+        #print(self.vocab)
 
     
