@@ -43,7 +43,7 @@ def apply_attention_make_batch(tensor,mask,index,max_length):
         tensor_pad[i,:,:t.size(1)] = t
 
         m = mask[i,index[i]:index[i] + max_length]
-        mask_pad[i,m.size(1):] = 1
+        mask_pad[i,m.size(0):] = 1
         
     return tensor_pad,mask_pad.bool()
 
