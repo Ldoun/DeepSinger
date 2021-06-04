@@ -343,6 +343,7 @@ class alignment_model(nn.Module):
         #|h_t_tilde| = (batch_size,length,hidden_size)
 
         y_hat = self.generator(h_tilde)
+        self.attention.reset()
         #|y_hat| = (batch_size,length,ouput_size)
 
         return y_hat,attention,encoder_hidden,decoder_hidden
