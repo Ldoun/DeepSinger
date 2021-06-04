@@ -124,7 +124,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     #norm_type=2,
                 )'''#gradient clipping          
 
-                del chunk_y, chunk_y_label, chunk_x, chunk_mask, y_hat, mini_attention, encoder_hidden, decoder_hidden,loss
+                del chunk_y, chunk_y_label, chunk_x, chunk_mask, y_hat, mini_attention,loss
                     
         word_count = int(mini_batch_tgt[1].sum())
         p_norm = float(get_parameter_norm(engine.model.parameters())) #모델의 복잡도 학습됨에 따라 커져야함
