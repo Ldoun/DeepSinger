@@ -93,7 +93,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     decoder_hidden = detach_hidden(decoder_hidden)
                     y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),chunk_y,en_hidden = encoder_hidden,de_hidden = decoder_hidden)# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
                 
-                attention_index = torch.argmax(mini_attention[:,-1,:],dim=1)
+                attention_index = int(torch.argmax(mini_attention[:,-1,:],dim=1))
                 chunk_index = chunk_index + engine.config.tbtt_step
 
                 loss = engine.crit(
@@ -108,22 +108,23 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 #|y_hat| = (batch_size,length,ouput_size)
                 
                 
-                backward_target = loss
                 loss_list.append(loss.item())
 
                 if engine.config.gpu_id >=0:
-                    engine.scaler.scale(backward_target).backward()
+                    engine.scaler.scale(loss).backward()
                     engine.scaler.step(engine.optimizer)
                     engine.scaler.update()
                 else:
-                    backward_target.backward()
+                    loss.backward()
                     engine.optimizer.step()
 
                 '''torch_utils.clip_grad_norm_(
                     engine.model.parameters(),
                     engine.config.max_gr_norm,
                     #norm_type=2,
-                )'''#gradient clipping           
+                )'''#gradient clipping          
+
+                del chunk_y, chunk_y_label, chunk_x, chunk_mask, y_hat, mini_attention, encoder_hidden, decoder_hidden,loss
                     
         word_count = int(mini_batch_tgt[1].sum())
         p_norm = float(get_parameter_norm(engine.model.parameters())) #모델의 복잡도 학습됨에 따라 커져야함
