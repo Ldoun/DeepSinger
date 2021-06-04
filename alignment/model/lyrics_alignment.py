@@ -50,7 +50,7 @@ class   location_sensitive_attention(nn.Module):
         Ws = self.W(query) #[N, 1, A]
         if self.Vh is None:
             self.Vh = self.V(values) #[N, Ti, A]
-        #print(cumulative_attention_weights.shape)
+        print(cumulative_attention_weights.shape)
         location_feature = self.F(cumulative_attention_weights) #[N, 32, Ti]
         # print(location_feature.size())
         Uf = self.U(location_feature.transpose(1, 2)) #[N, Ti, A]
