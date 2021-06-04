@@ -191,12 +191,13 @@ def get_mask_from_lengths(lengths):
 if __name__ == '__main__':
     # Test LJSpeechDataset
     import sys
-    from alignment.Tokenizer import tokenizer
+    from Tokenizer import tokenizer
     import os
     wav_path = './sample'
     tsv_file = './sample/sample.tsv'
 
-    tok = tokenizer()
+    tok = tokenizer(None)
+    tok.set_vocab(tsv_file)
     dataset = LJSpeechDataset(wav_path, tsv_file,tok = tok)
     print(len(dataset))
     for i, data in enumerate(dataset):
@@ -251,7 +252,7 @@ if __name__ == '__main__':
         print(batch[1][0].shape)
         print(batch[1][1].shape)
         print(batch[1][0])'''
-        print(batch[0][0] )
+        print('mask',batch[0][0] )
         print(batch[0][1])
         print(batch[0][2])
         print(batch[0][2].shape)

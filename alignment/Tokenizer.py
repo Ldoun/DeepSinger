@@ -60,7 +60,7 @@ class tokenizer(object):
 
     def set_vocab(self,tsv_file):
         metadata = pd.read_csv(f'{tsv_file}', sep='\t',
-                                    usecols=['titles', 'lyrics'],
+                                    usecols=['video_name', 'lyrics'],
                                     ) 
 
         for i in metadata['lyrics'].values:
