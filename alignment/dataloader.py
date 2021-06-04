@@ -32,13 +32,13 @@ class LJSpeechDataset(data.Dataset):
         self.wav_path = wav_path
         self.tok = tok
         self.metadata = pd.read_csv(f'{tsv_file}', sep='\t',
-                                    usecols=['titles', 'lyrics'],
+                                    usecols=['video_name', 'lyrics'],
                                     ) 
         self.metadata.dropna(inplace=True)  # Actually, nothing to drop
         self.audio_transformer = audio_transformer
         self.sample_rate = sample_rate
         if sort:
-            self.metadata['length'] = self.metadata['titles'].apply(
+            self.metadata['length'] = self.metadata['video_name'].apply(
                     lambda x: librosa.get_duration(filename=f'{wav_path}/{x}.wav'))
             self.metadata.sort_values(by=['length'], inplace=True, ascending=False)
         
@@ -68,7 +68,7 @@ class LJSpeechDataset(data.Dataset):
         return text
 
     def _get_audio(self, index):
-        filename = self.metadata.iloc[index]['titles']
+        filename = self.metadata.iloc[index]['video_name']
         #print(f'{self.wav_path}/{filename}.wav')
         audio,sr = torchaudio.load(f'{self.wav_path}/{filename}.wav')
         if self.audio_transformer:
