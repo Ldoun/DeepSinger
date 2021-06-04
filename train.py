@@ -164,7 +164,7 @@ def define_argparser(is_continue=False):
     )
 
     p.add_argument(
-        '--multi-gpu',
+        '--multi_gpu',
         action='store_true',
         help='multi-gpu',
     )
@@ -247,13 +247,13 @@ def main(config, model_weight=None, opt_weight=None, vocab = None):
 
     # Pass models to GPU device if it is necessary.
 
-    if config.multi-gpu:
+    if config.multi_gpu:
         model = nn.DataParallel(model)
         model.cuda()
         crit.cuda(config.gpu_id)
 
 
-    if config.gpu_id >= 0 and not config.multi-gpu:
+    if config.gpu_id >= 0 and not config.multi_gpu:
         model.cuda(config.gpu_id)
         
   
