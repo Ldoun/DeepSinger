@@ -50,13 +50,13 @@ class   location_sensitive_attention(nn.Module):
         Ws = self.W(query) #[N, 1, A]
         if self.Vh is None:
             self.Vh = self.V(values) #[N, Ti, A]
-        print(cumulative_attention_weights.shape)
+        #print(cumulative_attention_weights.shape)
         location_feature = self.F(cumulative_attention_weights) #[N, 32, Ti]
         # print(location_feature.size())
         Uf = self.U(location_feature.transpose(1, 2)) #[N, Ti, A]
-        print('W s_i', Ws.size())
-        print('V h_j', self.Vh.size())
-        print('U f_ij', Uf.size())
+        #print('W s_i', Ws.size())
+        #print('V h_j', self.Vh.size())
+        #print('U f_ij', Uf.size())
         energies = self.v(torch.tanh(Ws + self.Vh + Uf)).squeeze(-1) #[N, Ti]
         
         # print('mask', mask)
@@ -76,7 +76,7 @@ class   location_sensitive_attention(nn.Module):
             attention_context: [N, He]
             attention_weights: [N, Ti]
         """
-        print("values",values.shape)
+        #print("values",values.shape)
         energies = self._cal_energy(query, values, cumulative_attention_weights, mask) #[N, Ti]
         attention_weights = F.softmax(energies, dim=1) #[N, Ti]
         # print('weights', attention_weights)
