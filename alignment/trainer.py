@@ -74,8 +74,8 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 chunk_length = []
                 start_index = start_index + attention_index
 
-                chunk_x = x[:,:,start_index:start_index + engine.config.tbtt_step * x_length//y_length].to(device)
-                chunk_mask = mask[:,start_index:start_index + engine.config.tbtt_step * x_length//y_length].to(device)
+                chunk_x = x[:,:,start_index:start_index + engine.config.tbtt_step * (x_length//y_length)].to(device)
+                chunk_mask = mask[:,start_index:start_index + engine.config.tbtt_step * (x_length//y_length)].to(device)
                 print('chunk_x:',chunk_x.shape)
                 if encoder_hidden is None:
                     y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),chunk_y)# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
