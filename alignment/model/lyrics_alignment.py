@@ -165,6 +165,7 @@ class mel_encoder(nn.Module):
         else:
             y,h = self.rnn(x,hidden)
 
+        print('rnn',y.shape)
         if length is not None:
             y, _ =  unpack(y,batch_first=True)
           
