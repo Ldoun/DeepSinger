@@ -93,7 +93,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     decoder_hidden = detach_hidden(decoder_hidden)
                     y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),chunk_y,en_hidden = encoder_hidden,de_hidden = decoder_hidden)# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
                 
-                attention_index = int(torch.argmax(mini_attention[:,-1,:],dim=1))
+                attention_index = torch.argmax(mini_attention[:,-1,:],dim=1).numpy()
                 chunk_index = chunk_index + engine.config.tbtt_step
 
                 loss = engine.crit(
