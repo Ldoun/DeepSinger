@@ -76,6 +76,7 @@ class   location_sensitive_attention(nn.Module):
             attention_context: [N, He]
             attention_weights: [N, Ti]
         """
+        print("values",values.shape)
         energies = self._cal_energy(query, values, cumulative_attention_weights, mask) #[N, Ti]
         attention_weights = F.softmax(energies, dim=1) #[N, Ti]
         # print('weights', attention_weights)
@@ -154,7 +155,7 @@ class mel_encoder(nn.Module):
         x = mel         
 
         x = self.prenet(x)  # (bs,128,length)  
-        print('prenet',x.shape) 
+        #print('prenet',x.shape) 
         x = x.transpose(1,2) #(bs,512,length)
 
         if length is not None: 
@@ -165,7 +166,7 @@ class mel_encoder(nn.Module):
         else:
             y,h = self.rnn(x,hidden)
 
-        print('rnn',y.shape)
+        #print('rnn',y.shape)
         if length is not None:
             y, _ =  unpack(y,batch_first=True)
           
