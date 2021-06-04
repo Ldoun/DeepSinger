@@ -30,6 +30,24 @@ def get_parameter_norm(parameters, norm_type = 2):
 
     return total_norm
 
+def apply_attention_make_batch(tensor,mask,index,max_length):
+    tensor_pad = torch.LongTensor(tensor.size(0),tensor.size(1), max_length)
+    tensor_pad.zero_()
+
+    mask_pad = torch.LongTensor(tensor.size(0),tensor.size(1), max_length)
+    mask_pad.zero_()
+
+    for i in range(tensor.size(0)):
+        t = tensor[i,:,index[i]:index[i] + max_length]
+        tensor_pad[i,:,:t.size(2)] = t
+
+        m = mask[i,:,index[i]:index[i] + max_length]
+        mask_pad[i,:,m.size(2):] = 1
+        
+    return tensor_pad,mask_pad.bool()
+
+
+
 def guided_attention( W,max_N, max_T): #w 54.68827160493827
     M = np.zeros((max_N, max_T), dtype=np.float32)
     for i in range(max_N):

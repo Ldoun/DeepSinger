@@ -7,7 +7,7 @@ import torch.nn.utils as torch_utils
 from  torch.cuda.amp import autocast
 from torch.cuda.amp import GradScaler
 
-from alignment.utils import get_grad_norm,get_parameter_norm,detach_hidden,guided_attentions # change utils -> DeepSinger.utils
+from alignment.utils import get_grad_norm,get_parameter_norm,detach_hidden,guided_attentions,apply_attention_make_batch
 from ignite.contrib.handlers.tensorboard_logger import *
 
 from ignite.engine import Engine
@@ -79,6 +79,11 @@ class MaximumLikelihoodEstimationEngine(Engine):
 
                 chunk_x = x[:,:,start_index:start_index + engine.config.tbtt_step * (x_length//y_length)].to(device)
                 chunk_mask = mask[:,start_index:start_index + engine.config.tbtt_step * (x_length//y_length)].to(device)
+
+                chunk_x,chunk_mask = apply_attention_make_batch(x,mask,start_index,engine.config.tbtt_step * (x_length//y_length))
+                chunk_x = chunk_x.to(device)
+                chunk_mask = chunk_mask.to(device)
+                
                 #print('chunk_x:',chunk_x.shape)
                 if encoder_hidden is None:
                     y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),chunk_y)# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
@@ -148,7 +153,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
             mini_batch_tgt = (mini_batch[1][0].to(device),mini_batch[1][1])
             
             x, y = mini_batch_src, mini_batch_tgt[0][:,1:]
-            print(x[0].size())
+            #print(x[0].size())
             #|x| = (batch_size,length)
             #|y| = (batch_size,length)
             
