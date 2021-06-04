@@ -126,6 +126,7 @@ class ConvolutionBlock(nn.Module):
         self.relu = nn.ReLU()
 
     def forward(self,x):
+        x = x.to(torch.float32)
         x = self.conv1d(x)
         x = self.b_norm(x)
         x = self.relu(x)
