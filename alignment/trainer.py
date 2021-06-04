@@ -77,13 +77,15 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 #print('start_index',start_index)
                 #print('attention_index',attention_index)
 
-                chunk_x = x[:,:,start_index:start_index + engine.config.tbtt_step * (x_length//y_length)].to(device)
-                chunk_mask = mask[:,start_index:start_index + engine.config.tbtt_step * (x_length//y_length)].to(device)
+                if len(start_index) > 1:
+                    chunk_x,chunk_mask = apply_attention_make_batch(x,mask,start_index,engine.config.tbtt_step * (x_length//y_length))
+                    chunk_x = chunk_x.to(device)
+                    chunk_mask = chunk_mask.to(device)
+                    
+                else:
+                    chunk_x = x[:,:,start_index:start_index + engine.config.tbtt_step * (x_length//y_length)].to(device)
+                    chunk_mask = mask[:,start_index:start_index + engine.config.tbtt_step * (x_length//y_length)].to(device)
 
-                chunk_x,chunk_mask = apply_attention_make_batch(x,mask,start_index,engine.config.tbtt_step * (x_length//y_length))
-                chunk_x = chunk_x.to(device)
-                chunk_mask = chunk_mask.to(device)
-                
                 #print('chunk_x:',chunk_x.shape)
                 if encoder_hidden is None:
                     y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),chunk_y)# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
