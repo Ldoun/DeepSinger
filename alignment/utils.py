@@ -34,7 +34,7 @@ def apply_attention_make_batch(tensor,mask,index,max_length):
     tensor_pad = torch.LongTensor(tensor.size(0),tensor.size(1), max_length)
     tensor_pad.zero_()
 
-    mask_pad = torch.LongTensor(tensor.size(0),tensor.size(1), max_length)
+    mask_pad = torch.LongTensor(tensor.size(0), max_length)
     mask_pad.zero_()
 
     for i in range(tensor.size(0)):
