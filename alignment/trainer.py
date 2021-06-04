@@ -157,9 +157,9 @@ class MaximumLikelihoodEstimationEngine(Engine):
             #print(x[0].size())
             #|x| = (batch_size,length)
             #|y| = (batch_size,length)
-            print(mini_batch_src[0].shape)
-            print(mini_batch_src[1].shape)
-            print(mini_batch_tgt[0].shape)
+            #print(mini_batch_src[0].shape)
+            #print(mini_batch_src[1].shape)
+            #print(mini_batch_tgt[0].shape)
             with autocast():
                 y_hat,mini_attention,_,_ = engine.model(mini_batch_src,mini_batch_tgt[0][:,:-1])# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
 
