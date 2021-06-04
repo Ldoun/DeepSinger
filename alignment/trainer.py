@@ -112,7 +112,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 loss_list.append(loss.item())
 
                 if engine.config.gpu_id >=0:
-                    engine.scaler.scale(backward_target).backward(retain_graph=True)
+                    engine.scaler.scale(backward_target).backward()
                     engine.scaler.step(engine.optimizer)
                     engine.scaler.update()
                 else:
