@@ -74,6 +74,14 @@ def define_argparser(is_continue=False):
         default=32,
         help='Mini batch size for gradient descent. Default=%(default)s'
     )
+
+    p.add_argument(
+        '--valid_batch_size',
+        type=int,
+        default=32,
+        help='Mini batch size for gradient descent. Default=%(default)s'
+    )
+
     p.add_argument(
         '--n_epochs',
         type=int,
@@ -228,7 +236,7 @@ def main(config, model_weight=None, opt_weight=None, vocab = None):
     train_dataset,valid_dataset = random_split(dataset,[config.train_size,config.valid_size],generator=torch.Generator().manual_seed(42))
     
     train_batch_sampler = RandomBucketBatchSampler(train_dataset, batch_size=config.batch_size, drop_last=False)
-    valid_batch_sampler = RandomBucketBatchSampler(valid_dataset, batch_size=config.batch_size//3, drop_last=False)
+    valid_batch_sampler = RandomBucketBatchSampler(valid_dataset, batch_size=config.valid_batch_size, drop_last=False)
     
     collate_fn = TextAudioCollate()
 
