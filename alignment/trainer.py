@@ -96,14 +96,14 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 attention_index = np.array(torch.argmax(mini_attention[:,-1,:],dim=1).tolist())
                 chunk_index = chunk_index + engine.config.tbtt_step
 
-                loss = engine.crit(
+                loss = engine.crit(# pad만으로 구성돼서?
                     y_hat.contiguous().view(-1,y_hat.size(-1)),
                     chunk_y_label.contiguous().view(-1)
                 )
 
-                print('chunk_x',chunk_x.shape)
+                '''print('chunk_x',chunk_x.shape)
                 print('y_hat',y_hat.contiguous().view(-1,y_hat.size(-1)).shape)
-                print('y',chunk_y_label.contiguous().view(-1).shape)
+                print('y',chunk_y_label.contiguous().view(-1).shape)'''
 
                 soft_mask = guided_attentions(mini_attention.shape,engine.config.W)
                 soft_mask = torch.from_numpy(soft_mask).to(device)
@@ -111,8 +111,14 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 loss = loss + attn_loss
                 #|y_hat| = (batch_size,len  gth,ouput_size)
                 
+                print('soft_mask',soft_mask)
+                print('mini_attention',mini_attention)
                 print('attn_loss',attn_loss)
                 
+                if np.isnan(loss):
+                    print(y_hat)
+                    print(chunk_y_label)
+
                 loss_list.append(loss.item())
 
                 if engine.config.gpu_id >=0 or engine.config.multi_gpu:
@@ -139,7 +145,6 @@ class MaximumLikelihoodEstimationEngine(Engine):
         #if engine.config.use_noam_decay and engine.lr_scheduler is not None:
         #    engine.lr_scheduler.step()
         print('loss_list',loss_list)
-        print('word_count',word_count)
         loss = float((sum(loss_list)/len(loss_list))/word_count)
         ppl = np.exp(loss)   
 
