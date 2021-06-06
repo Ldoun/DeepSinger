@@ -101,7 +101,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     chunk_y_label.contiguous().view(-1)
                 )
 
-                
+                print('chunk_x',chunk_x.shape)
                 print('y_hat',y_hat.contiguous().view(-1,y_hat.size(-1)).shape)
                 print('y',chunk_y_label.contiguous().view(-1).shape)
 
