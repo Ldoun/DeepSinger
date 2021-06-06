@@ -149,35 +149,79 @@ class MaximumLikelihoodEstimationEngine(Engine):
         engine.model.eval()
 
         with torch.no_grad():
-            device = next(engine.model.parameters()).device 
-            mini_batch_src = (mini_batch[0][0].to(device),mini_batch[0][1].to(device))
-            mini_batch_tgt = (mini_batch[1][0].to(device),mini_batch[1][1])
+            device = next(engine.model.parameters()).device
+            x,mask = mini_batch[0][0],mini_batch[0][1] #tensor,length,mask
+            mini_batch_tgt = (mini_batch[1][0],mini_batch[1][1])
             
-            x, y = mini_batch_src, mini_batch_tgt[0][:,1:]
-            #print(x[0].size())
-            #|x| = (batch_size,length)
+            y = mini_batch_tgt[0][:,1:]  #<BOS> 제외 정답문장 1번 단어부터 비교
+            #|x| = (batch_size,128,length)
             #|y| = (batch_size,length)
-            #print(mini_batch_src[0].shape)
-            #print(mini_batch_src[1].shape)
-            #print(mini_batch_tgt[0].shape)
-            with autocast():
-                y_hat,mini_attention,_,_ = engine.model(mini_batch_src,mini_batch_tgt[0][:,:-1])# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
 
-                #|y_hat| = (batch_size,n_class)
-                
-                loss = engine.crit(
-                    y_hat.contiguous().view(-1,y_hat.size(-1)),
-                    y.contiguous().view(-1),
-                )
-            
-                soft_mask = guided_attentions(mini_attention.shape,engine.config.W)
-                soft_mask = torch.from_numpy(soft_mask).to(device)
-                attn_loss = -(soft_mask * mini_attention).mean() #sum or mean?
-                loss = loss + attn_loss
+            x_length = x.size(2)
+            y_length = y.size(1)
+            encoder_hidden,decoder_hidden = None,None 
+            loss_list = []
+            chunk_index = 0
+            start_index,attention_index = 0,0
+            input_y = mini_batch_tgt[0][:,:-1]
+            with autocast():
+                while chunk_index < engine.max_target_ratio * y_length:      
+                    engine.model.train()
+                    engine.optimizer.zero_grad()
+
+                    chunk_y = input_y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
+                    chunk_y_label = y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
+                    
+                    chunk_length = []
+                    start_index = start_index + attention_index
+                    
+                    #print('start_index',start_index)
+                    #print('attention_index',attention_index)
+                        
+                    #print('chunk_x:',chunk_x.shape)
+                    if encoder_hidden is None:
+                        chunk_x = x[:,:,start_index:start_index + engine.config.tbtt_step * (x_length//y_length)].to(device)
+                        chunk_mask = mask[:,start_index:start_index + engine.config.tbtt_step * (x_length//y_length)].to(device)
+
+                        y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),chunk_y)# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
+
+                    else:
+                        chunk_x,chunk_mask = apply_attention_make_batch(x,mask,start_index,engine.config.tbtt_step * (x_length//y_length))
+                        chunk_x = chunk_x.to(device)
+                        chunk_mask = chunk_mask.to(device)
+
+                        encoder_hidden = detach_hidden(encoder_hidden)
+                        decoder_hidden = detach_hidden(decoder_hidden)
+                        y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),chunk_y,en_hidden = encoder_hidden,de_hidden = decoder_hidden)# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
+                    
+                    attention_index = np.array(torch.argmax(mini_attention[:,-1,:],dim=1).tolist())
+                    chunk_index = chunk_index + engine.config.tbtt_step
+
+                    loss = engine.crit(
+                        y_hat.contiguous().view(-1,y_hat.size(-1)),
+                        chunk_y_label.contiguous().view(-1)
+                    )
+
+                    soft_mask = guided_attentions(mini_attention.shape,engine.config.W)
+                    soft_mask = torch.from_numpy(soft_mask).to(device)
+                    attn_loss = -(soft_mask * mini_attention).mean() #sum or mean?
+                    loss = loss + attn_loss
+                    #|y_hat| = (batch_size,length,ouput_size)
+                    
+                    
+                    loss_list.append(loss.item())
+
+                    '''torch_utils.clip_grad_norm_(
+                        engine.model.parameters(),
+                        engine.config.max_gr_norm,
+                        #norm_type=2,
+                    )'''#gradient clipping          
+
+                    del chunk_y, chunk_y_label, chunk_x, chunk_mask, y_hat, mini_attention,loss
 
         word_count = int(mini_batch_tgt[1].sum())
-        loss = float(loss/word_count)
-        ppl = np.exp(loss)
+        loss = float((sum(loss_list)/len(loss_list))/word_count)
+        ppl = np.exp(loss)   
 
         return {
             'loss': loss,
