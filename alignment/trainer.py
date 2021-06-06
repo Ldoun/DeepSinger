@@ -166,9 +166,8 @@ class MaximumLikelihoodEstimationEngine(Engine):
             input_y = mini_batch_tgt[0][:,:-1]
             with autocast():
                 while chunk_index < engine.max_target_ratio * y_length:      
-                    engine.model.train()
-                    engine.optimizer.zero_grad()
-
+                    engine.model.eval()
+                    
                     chunk_y = input_y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
                     chunk_y_label = y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
                     
