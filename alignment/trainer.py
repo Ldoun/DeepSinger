@@ -101,11 +101,15 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     chunk_y_label.contiguous().view(-1)
                 )
 
+                
+                print('y_hat',y_hat.contiguous().view(-1,y_hat.size(-1)).shape)
+                print('y',chunk_y_label.contiguous().view(-1).shape)
+
                 soft_mask = guided_attentions(mini_attention.shape,engine.config.W)
                 soft_mask = torch.from_numpy(soft_mask).to(device)
                 attn_loss = -(soft_mask * mini_attention).mean() #sum or mean?
                 loss = loss + attn_loss
-                #|y_hat| = (batch_size,length,ouput_size)
+                #|y_hat| = (batch_size,len  gth,ouput_size)
                 
                 
                 loss_list.append(loss.item())
