@@ -110,13 +110,13 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 attn_loss = -(soft_mask * mini_attention).mean() #sum or mean?
                 loss = loss + attn_loss
                 #|y_hat| = (batch_size,len  gth,ouput_size)
-                print('soft_mask',soft_mask)
-                print('mini_attention',mini_attention)
+                print('soft_mask',torch.isnan(soft_mask).any())
+                print('mini_attention',torch.isnan(mini_attention).any())
                 print('attn_loss',attn_loss)
                 
-                '''print(y_hat)
-                print(chunk_y_label)'''
-                
+                print('y_hat',torch.isnan(y_hat).any())
+                print('chunk_y_label',torch.isnan(chunk_y_label).any())
+
                 loss_list.append(loss.item())
 
                 if engine.config.gpu_id >=0 or engine.config.multi_gpu:
