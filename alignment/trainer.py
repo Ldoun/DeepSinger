@@ -111,6 +111,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 loss = loss + attn_loss
                 #|y_hat| = (batch_size,len  gth,ouput_size)
                 
+                print('attn_loss',attn_loss)
                 
                 loss_list.append(loss.item())
 
