@@ -110,7 +110,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 
                 loss_list.append(loss.item())
 
-                if engine.config.gpu_id >=0:
+                if engine.config.gpu_id >=0 or engine.config.multi_gpu:
                     engine.scaler.scale(loss).backward()
                     engine.scaler.step(engine.optimizer)
                     engine.scaler.update()
@@ -167,7 +167,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
             with autocast():
                 while chunk_index < engine.max_target_ratio * y_length:      
                     engine.model.eval()
-                    
+
                     chunk_y = input_y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
                     chunk_y_label = y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
                     
