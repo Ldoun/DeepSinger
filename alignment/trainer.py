@@ -137,7 +137,8 @@ class MaximumLikelihoodEstimationEngine(Engine):
 
         #if engine.config.use_noam_decay and engine.lr_scheduler is not None:
         #    engine.lr_scheduler.step()
-
+        print('loss_list',loss_list)
+        print('word_count',word_count)
         loss = float((sum(loss_list)/len(loss_list))/word_count)
         ppl = np.exp(loss)   
 
