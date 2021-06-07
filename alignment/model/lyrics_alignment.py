@@ -54,9 +54,9 @@ class   location_sensitive_attention(nn.Module):
         location_feature = self.F(cumulative_attention_weights) #[N, 32, Ti]
         # print(location_feature.size())
         Uf = self.U(location_feature.transpose(1, 2)) #[N, Ti, A]
-        print('W s_i', Ws.size())
+        '''print('W s_i', Ws.size())
         print('V h_j', self.Vh.size())
-        print('U f_ij', Uf.size())
+        print('U f_ij', Uf.size())'''
         energies = self.v(torch.tanh(Ws + self.Vh + Uf)).squeeze(-1) #[N, Ti]
         
         # print('mask', mask)
