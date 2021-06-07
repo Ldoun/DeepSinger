@@ -132,9 +132,7 @@ class ConvolutionBlock(nn.Module):
 
     def forward(self,x):
         for row in x:
-            print(row.shape)
-            print(torch.sum(row,dim=-1))
-            if torch.sum(row,dim=-1) == 0:
+            if torch.sum(row,dim=-(0,1)) == 0:
                 print('yes...')
         #print('input_x',torch.isnan(x).any())
         x = x.to(torch.float32)
