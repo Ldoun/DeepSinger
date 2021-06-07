@@ -131,17 +131,17 @@ class ConvolutionBlock(nn.Module):
     #https://github.com/pytorch/pytorch/issues/1206#issuecomment-292440241
 
     def forward(self,x):
-        print('input_x',torch.isnan(x).any())
+        #print('input_x',torch.isnan(x).any())
         x = x.to(torch.float32)
-        print('float_x',torch.isnan(x).any())
+        #print('float_x',torch.isnan(x).any())
         x = self.conv1d(x)
-        print('conv1d',torch.isnan(x).any())
+        #print('conv1d',torch.isnan(x).any())
 
         #x = self.b_norm(x)
         #print(b_norm,x.shape)
         #print('b_norm',torch.isnan(x).any())
         x = self.relu(x)
-        print('relu',torch.isnan(x).any())
+        #print('relu',torch.isnan(x).any())
         return x
 
 class mel_encoder(nn.Module):
@@ -166,11 +166,11 @@ class mel_encoder(nn.Module):
 
     def forward(self,mel,hidden,length = None):
         x = mel         
-        print('input_x',torch.isnan(x).any())
+        #print('input_x',torch.isnan(x).any())
         x = self.prenet(x)  # (bs,128,length)  
-        print('prenet',x.shape) 
+        #print('prenet',x.shape) 
 
-        print('prenet',torch.isnan(x).any())
+        #print('prenet',torch.isnan(x).any())
         x = x.transpose(1,2) #(bs,512,length)
 
 
@@ -184,7 +184,7 @@ class mel_encoder(nn.Module):
             #print('hidden not none')
             y,h = self.rnn(x,hidden)
 
-        print('rnn',torch.isnan(y).any())
+        #print('rnn',torch.isnan(y).any())
         #print('length',length)
 
         #print('rnn',y.shape)
