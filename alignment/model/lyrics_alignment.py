@@ -165,8 +165,10 @@ class mel_encoder(nn.Module):
             x = pack(x,length,batch_first=True) # enforce_sorted = True tensor내 정렬 필요
             
         if hidden is None:
+            print('hidden none')
             y,h = self.rnn(x) #(bs,length,512)
         else:
+            print('hidden not none')
             y,h = self.rnn(x,hidden)
 
         #print('rnn',y.shape)
@@ -353,7 +355,7 @@ class alignment_model(nn.Module):
         print('cumulative_attention',torch.isnan(cumulative_attention).any())
         print('decoder_output',torch.isnan(decoder_output).any())
         print('h_src', torch.isnan(h_src).any())
-        
+        print('en_hidden',torch.isnan(en_hidden).any())
 
         return y_hat,attention,encoder_hidden,decoder_hidden
 
