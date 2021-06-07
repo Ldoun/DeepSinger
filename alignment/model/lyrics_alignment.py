@@ -54,9 +54,9 @@ class   location_sensitive_attention(nn.Module):
         location_feature = self.F(cumulative_attention_weights) #[N, 32, Ti]
         # print(location_feature.size())
         Uf = self.U(location_feature.transpose(1, 2)) #[N, Ti, A]
-        #print('W s_i', Ws.size())
-        #print('V h_j', self.Vh.size())
-        #print('U f_ij', Uf.size())
+        print('W s_i', Ws.size())
+        print('V h_j', self.Vh.size())
+        print('U f_ij', Uf.size())
         energies = self.v(torch.tanh(Ws + self.Vh + Uf)).squeeze(-1) #[N, Ti]
         
         # print('mask', mask)
@@ -355,6 +355,7 @@ class alignment_model(nn.Module):
         print('cumulative_attention',torch.isnan(cumulative_attention).any())
         print('decoder_output',torch.isnan(decoder_output).any())
         print('h_src', torch.isnan(h_src).any())
+        print('encoder_hidden', torch.isnan(encoder_hidden).any())
         if en_hidden is not None:
             print('en_hidden0',torch.isnan(en_hidden[0]).any())
             print('en_hidden1',torch.isnan(en_hidden[1]).any())
