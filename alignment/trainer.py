@@ -114,7 +114,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 print('soft_mask',torch.isnan(soft_mask).any())
                 print('mini_attention',torch.isnan(mini_attention).any())
                 print('attn_loss',attn_loss)
-                
+                print('chunk_x',torch.isnan(chunk_x).any())
                 print('y_hat',torch.isnan(y_hat).any())
                 print('chunk_y_label',torch.isnan(chunk_y_label).any())
 
