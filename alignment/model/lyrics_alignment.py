@@ -128,6 +128,7 @@ class ConvolutionBlock(nn.Module):
         self.relu = nn.ReLU()
 
     def forward(self,x):
+        print('input_x',torch.isnan(x).any())
         x = x.to(torch.float32)
         print('float_x',torch.isnan(x).any())
         x = self.conv1d(x)
