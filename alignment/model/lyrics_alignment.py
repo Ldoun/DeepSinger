@@ -156,10 +156,13 @@ class mel_encoder(nn.Module):
 
     def forward(self,mel,hidden,length = None):
         x = mel         
-
+        print('input_x',torch.isnan(x).any*())
         x = self.prenet(x)  # (bs,128,length)  
         #print('prenet',x.shape) 
+
+        print('prenet',torch.isnan(x).any*())
         x = x.transpose(1,2) #(bs,512,length)
+
 
         if length is not None: 
             x = pack(x,length,batch_first=True) # enforce_sorted = True tensor내 정렬 필요
@@ -170,6 +173,9 @@ class mel_encoder(nn.Module):
         else:
             print('hidden not none')
             y,h = self.rnn(x,hidden)
+
+        print('rnn',torch.isnan(y).any())
+        print('length',length)
 
         #print('rnn',y.shape)
         if length is not None:
