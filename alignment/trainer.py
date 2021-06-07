@@ -112,12 +112,12 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     #if not torch.isnan(attn_loss):
                     loss = loss + attn_loss
                     #|y_hat| = (batch_size,len  gth,ouput_size)
-                    print('soft_mask',torch.isnan(soft_mask).any())
+                    '''print('soft_mask',torch.isnan(soft_mask).any())
                     print('mini_attention',torch.isnan(mini_attention).any())
                     print('attn_loss',attn_loss)
                     print('chunk_x',torch.isnan(chunk_x).any())
                     print('y_hat',torch.isnan(y_hat).any())
-                    print('chunk_y_label',torch.isnan(chunk_y_label).any())
+                    print('chunk_y_label',torch.isnan(chunk_y_label).any())'''
 
                     loss_list.append(loss.item())
 
@@ -144,7 +144,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
 
         #if engine.config.use_noam_decay and engine.lr_scheduler is not None:
         #    engine.lr_scheduler.step()
-        print('loss_list',loss_list)
+        #print('loss_list',loss_list)
         loss = float((sum(loss_list)/len(loss_list))/word_count)
         ppl = np.exp(loss)   
 
@@ -248,7 +248,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
             mini_batch_tgt = (mini_batch[1][0].to(device),mini_batch[1][1])
             
             x, y = mini_batch_src, mini_batch_tgt[0][:,1:]
-            print(x[0].size())
+            #print(x[0].size())
             #|x| = (batch_size,length)
             #|y| = (batch_size,length)
             

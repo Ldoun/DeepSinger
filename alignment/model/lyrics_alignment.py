@@ -127,16 +127,21 @@ class ConvolutionBlock(nn.Module):
         self.b_norm = nn.BatchNorm1d(num_features=out_ch)
         self.relu = nn.ReLU()
 
+
+    #https://github.com/pytorch/pytorch/issues/1206#issuecomment-292440241
+
     def forward(self,x):
-        print('input_x',torch.isnan(x).any())
+        #print('input_x',torch.isnan(x).any())
         x = x.to(torch.float32)
-        print('float_x',torch.isnan(x).any())
+        #print('float_x',torch.isnan(x).any())
         x = self.conv1d(x)
-        print('conv1d',torch.isnan(x).any())
-        x = self.b_norm(x)
-        print('b_norm',torch.isnan(x).any())
+        #print('conv1d',torch.isnan(x).any())
+
+        #x = self.b_norm(x)
+        #print(b_norm,x.shape)
+        #print('b_norm',torch.isnan(x).any())
         x = self.relu(x)
-        print('relu',torch.isnan(x).any())
+        #print('relu',torch.isnan(x).any())
         return x
 
 class mel_encoder(nn.Module):
@@ -161,11 +166,11 @@ class mel_encoder(nn.Module):
 
     def forward(self,mel,hidden,length = None):
         x = mel         
-        print('input_x',torch.isnan(x).any())
+        #print('input_x',torch.isnan(x).any())
         x = self.prenet(x)  # (bs,128,length)  
         #print('prenet',x.shape) 
 
-        print('prenet',torch.isnan(x).any())
+        #print('prenet',torch.isnan(x).any())
         x = x.transpose(1,2) #(bs,512,length)
 
 
@@ -173,14 +178,14 @@ class mel_encoder(nn.Module):
             x = pack(x,length,batch_first=True) # enforce_sorted = True tensor내 정렬 필요
             
         if hidden is None:
-            print('hidden none')
+            #print('hidden none')
             y,h = self.rnn(x) #(bs,length,512)
         else:
-            print('hidden not none')
+            #print('hidden not none')
             y,h = self.rnn(x,hidden)
 
-        print('rnn',torch.isnan(y).any())
-        print('length',length)
+        #print('rnn',torch.isnan(y).any())
+        #print('length',length)
 
         #print('rnn',y.shape)
         if length is not None:
@@ -362,7 +367,7 @@ class alignment_model(nn.Module):
         self.attention.reset()
         #|y_hat| = (batch_size,length,ouput_size)
 
-        print('emb_tgt',torch.isnan(emb_tgt).any())
+        '''print('emb_tgt',torch.isnan(emb_tgt).any())
         print('cumulative_attention',torch.isnan(cumulative_attention).any())
         print('decoder_output',torch.isnan(decoder_output).any())
         print('h_src', torch.isnan(h_src).any())
@@ -370,7 +375,7 @@ class alignment_model(nn.Module):
         print('encoder_hidden', torch.isnan(encoder_hidden[1]).any())
         if en_hidden is not None:
             print('en_hidden0',torch.isnan(en_hidden[0]).any())
-            print('en_hidden1',torch.isnan(en_hidden[1]).any())
+            print('en_hidden1',torch.isnan(en_hidden[1]).any())'''
 
         return y_hat,attention,encoder_hidden,decoder_hidden
 
