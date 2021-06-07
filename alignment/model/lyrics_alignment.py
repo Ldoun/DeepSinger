@@ -356,7 +356,8 @@ class alignment_model(nn.Module):
         print('decoder_output',torch.isnan(decoder_output).any())
         print('h_src', torch.isnan(h_src).any())
         if en_hidden is not None:
-            print('en_hidden',torch.isnan(en_hidden).any())
+            print('en_hidden0',torch.isnan(en_hidden[0]).any())
+            print('en_hidden1',torch.isnan(en_hidden[1]).any())
 
         return y_hat,attention,encoder_hidden,decoder_hidden
 
