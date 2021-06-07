@@ -156,11 +156,11 @@ class mel_encoder(nn.Module):
 
     def forward(self,mel,hidden,length = None):
         x = mel         
-        print('input_x',torch.isnan(x).any*())
+        print('input_x',torch.isnan(x).any())
         x = self.prenet(x)  # (bs,128,length)  
         #print('prenet',x.shape) 
 
-        print('prenet',torch.isnan(x).any*())
+        print('prenet',torch.isnan(x).any())
         x = x.transpose(1,2) #(bs,512,length)
 
 
