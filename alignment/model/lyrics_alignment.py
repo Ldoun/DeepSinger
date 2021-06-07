@@ -355,7 +355,8 @@ class alignment_model(nn.Module):
         print('cumulative_attention',torch.isnan(cumulative_attention).any())
         print('decoder_output',torch.isnan(decoder_output).any())
         print('h_src', torch.isnan(h_src).any())
-        print('encoder_hidden', torch.isnan(encoder_hidden).any())
+        print('encoder_hidden', torch.isnan(encoder_hidden[0]).any())
+        print('encoder_hidden', torch.isnan(encoder_hidden[1]).any())
         if en_hidden is not None:
             print('en_hidden0',torch.isnan(en_hidden[0]).any())
             print('en_hidden1',torch.isnan(en_hidden[1]).any())
