@@ -129,9 +129,13 @@ class ConvolutionBlock(nn.Module):
 
     def forward(self,x):
         x = x.to(torch.float32)
+        print('float_x',torch.isnan(x).any())
         x = self.conv1d(x)
+        print('conv1d',torch.isnan(x).any())
         x = self.b_norm(x)
+        print('b_norm',torch.isnan(x).any())
         x = self.relu(x)
+        print('relu',torch.isnan(x).any())
         return x
 
 class mel_encoder(nn.Module):
