@@ -349,6 +349,12 @@ class alignment_model(nn.Module):
         self.attention.reset()
         #|y_hat| = (batch_size,length,ouput_size)
 
+        print('emb_tgt',torch.isnan(emb_tgt).any())
+        print('cumulative_attention',torch.innan(cumulative_attention).any())
+        print('decoder_output',torch.isnan(decoder_output).any())
+        print('h_src', torch.isnan(h_src).any())
+        
+
         return y_hat,attention,encoder_hidden,decoder_hidden
 
         
