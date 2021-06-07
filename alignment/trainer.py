@@ -108,6 +108,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 soft_mask = guided_attentions(mini_attention.shape,engine.config.W)
                 soft_mask = torch.from_numpy(soft_mask).to(device)
                 attn_loss = -(soft_mask * mini_attention).mean() #sum or mean?
+                #if not torch.isnan(attn_loss):
                 loss = loss + attn_loss
                 #|y_hat| = (batch_size,len  gth,ouput_size)
                 print('soft_mask',torch.isnan(soft_mask).any())
