@@ -155,6 +155,8 @@ class ConvolutionBlock(nn.Module):
             print('b_norm')
             print(torch.isnan(x).any())
             print(a)
+            print('-'*30)
+            print(x)
         #print(b_norm,x.shape)
         #print('b_norm',torch.isnan(x).any())
         x = self.relu(x)
