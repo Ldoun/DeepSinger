@@ -131,6 +131,7 @@ class ConvolutionBlock(nn.Module):
     #https://github.com/pytorch/pytorch/issues/1206#issuecomment-292440241
 
     def forward(self,x):
+        a = x
         if torch.isnan(x).any():
             print('nan input')
             print(torch.isnan(x).any())
@@ -153,6 +154,7 @@ class ConvolutionBlock(nn.Module):
         if torch.isnan(x).any():
             print('b_norm')
             print(torch.isnan(x).any())
+            print(a)
         #print(b_norm,x.shape)
         #print('b_norm',torch.isnan(x).any())
         x = self.relu(x)
