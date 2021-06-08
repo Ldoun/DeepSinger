@@ -132,7 +132,7 @@ class ConvolutionBlock(nn.Module):
 
     def forward(self,x):
         a = x
-        print(torch.any(torch.any(x,dim=-1),dim=-1))
+        print(torch.any(torch.any(x != 0,dim=1),dim=2))
         if torch.isnan(x).any():
             print('nan input')
             print(torch.isnan(x).any())
