@@ -35,7 +35,7 @@ def apply_attention_make_batch(tensor,mask,index,max_length):
     tensor_pad.zero_()
 
     mask_pad = torch.LongTensor(tensor.size(0), max_length)
-    mask_pad.zero_()
+    mask_pad.ones()
 
     for i in range(tensor.size(0)):
         t = tensor[i,:,index[i]:index[i] + max_length]
@@ -43,7 +43,7 @@ def apply_attention_make_batch(tensor,mask,index,max_length):
         tensor_pad[i,:,:t.size(1)] = t
 
         m = mask[i,index[i]:index[i] + max_length]
-        mask_pad[i,m.size(0):] = 1
+        mask_pad[i,:m.size(0)] = m
         print('m',m.shape)
 
     if torch.isnan(tensor_pad).any():
