@@ -131,6 +131,7 @@ class ConvolutionBlock(nn.Module):
     #https://github.com/pytorch/pytorch/issues/1206#issuecomment-292440241
 
     def forward(self,x):
+        a = x
         for row in x:
             if torch.sum(row,dim=(0,1)) == 0:
                 print('yes...')
@@ -142,6 +143,8 @@ class ConvolutionBlock(nn.Module):
 
         x = self.b_norm(x)
         #print(b_norm,x.shape)
+        if torch.isnan(x).any():
+            print(a)
         #print('b_norm',torch.isnan(x).any())
         x = self.relu(x)
         #print('relu',torch.isnan(x).any())
