@@ -47,6 +47,8 @@ class MaximumLikelihoodEstimationEngine(Engine):
     def train(engine, mini_batch):
         device = next(engine.model.parameters()).device
         print(mini_batch[2])
+        print('-' * 70)
+        print(mini_batch[1][1])
         x,mask = mini_batch[0][0],mini_batch[0][1] #tensor,length,mask
         mini_batch_tgt = (mini_batch[1][0],mini_batch[1][1])
         
