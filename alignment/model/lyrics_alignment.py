@@ -134,8 +134,6 @@ class ConvolutionBlock(nn.Module):
         if torch.isnan(x).any():
             print('nan input')
             print(torch.isnan(x).any())
-        else:
-            print(x)
 
         for row in x:
             if torch.sum(row,dim=(0,1)) == 0:

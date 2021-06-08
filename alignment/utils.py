@@ -43,12 +43,7 @@ def apply_attention_make_batch(tensor,mask,index,max_length):
 
         m = mask[i,index[i]:index[i] + max_length]
         mask_pad[i,:m.size(0)] = m
-        print('m',m.shape)
-
-    if torch.isnan(tensor_pad).any():
-        print('here')
-        if torch.isnan(tensor).any():
-            print('something wrong while making batch')
+        
     return tensor_pad,mask_pad.bool()
 
 
