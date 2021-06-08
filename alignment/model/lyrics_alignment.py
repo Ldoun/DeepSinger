@@ -304,6 +304,8 @@ class alignment_model(nn.Module):
         else:
             x = mel
         
+        if torch.isnan(x).any():
+            print('something wrong with chunkx')
         #|mel| = (bs,128,length)
         #|ipa| = (bs,length,vocab)
 
