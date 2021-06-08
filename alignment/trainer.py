@@ -82,14 +82,18 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     if encoder_hidden is None:
                         chunk_x = x[:,:,start_index:start_index + engine.config.tbtt_step * (x_length//y_length)].to(device)
                         chunk_mask = mask[:,start_index:start_index + engine.config.tbtt_step * (x_length//y_length)].to(device)
+                        
+                        if torch.isnan(chunk_x).any():
+                            print('up')
 
                         y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),chunk_y)# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
-
+                        
                     else:
                         chunk_x,chunk_mask = apply_attention_make_batch(x,mask,start_index,engine.config.tbtt_step * (x_length//y_length))
                         chunk_x = chunk_x.to(device)
                         chunk_mask = chunk_mask.to(device)
-
+                        if torch.isnan(chunk_x).any():
+                            print('down')
                         encoder_hidden = detach_hidden(encoder_hidden)
                         decoder_hidden = detach_hidden(decoder_hidden)
                         y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),chunk_y,en_hidden = encoder_hidden,de_hidden = decoder_hidden)# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
