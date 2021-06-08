@@ -133,6 +133,10 @@ class ConvolutionBlock(nn.Module):
     def forward(self,x):
         if torch.isnan(x).any():
             print('nan input')
+            print(torch.isnan(x).any())
+        else:
+            print(x)
+
         for row in x:
             if torch.sum(row,dim=(0,1)) == 0:
                 print('yes...')
@@ -303,9 +307,7 @@ class alignment_model(nn.Module):
             #|mask| = (batch_size,length)
         else:
             x = mel
-        
-        if torch.isnan(x).any():
-            print('something wrong with chunkx')
+
         #|mel| = (bs,128,length)
         #|ipa| = (bs,length,vocab)
 
