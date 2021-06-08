@@ -142,14 +142,25 @@ class ConvolutionBlock(nn.Module):
                 print('yes...')
         #print('input_x',torch.isnan(x).any())
         x = x.to(torch.float32)
+        if torch.isnan(x).any():
+            print('float32')
+            print(torch.isnan(x).any())
         #print('float_x',torch.isnan(x).any())
         x = self.conv1d(x)
         #print('conv1d',torch.isnan(x).any())
-
+        if torch.isnan(x).any():
+            print('conv1d')
+            print(torch.isnan(x).any())
         x = self.b_norm(x)
+        if torch.isnan(x).any():
+            print('b_norm')
+            print(torch.isnan(x).any())
         #print(b_norm,x.shape)
         #print('b_norm',torch.isnan(x).any())
         x = self.relu(x)
+        if torch.isnan(x).any():
+            print('relu')
+            print(torch.isnan(x).any())
         #print('relu',torch.isnan(x).any())
         return x
 
