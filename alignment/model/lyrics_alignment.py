@@ -154,7 +154,7 @@ class ConvolutionBlock(nn.Module):
         if torch.isnan(x).any():
             print('b_norm')
             print('*'*50)
-            print(torch.any(torch.any(x != 0,dim=-1),dim=-1))
+            print(torch.any(torch.any(x != 0,dim=1),dim=2))
         #print(b_norm,x.shape)
         #print('b_norm',torch.isnan(x).any())
         x = self.relu(x)
