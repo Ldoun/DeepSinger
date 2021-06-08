@@ -132,6 +132,7 @@ class ConvolutionBlock(nn.Module):
 
     def forward(self,x):
         a = x
+        print(torch.any(torch.any(x,dim=-1),dim=-1))
         if torch.isnan(x).any():
             print('nan input')
             print(torch.isnan(x).any())
@@ -149,15 +150,11 @@ class ConvolutionBlock(nn.Module):
         #print('conv1d',torch.isnan(x).any())
         if torch.isnan(x).any():
             print('conv1d')
-            print(torch.isnan(x).any())
         x = self.b_norm(x)
         if torch.isnan(x).any():
             print('b_norm')
-            print(torch.isnan(x).any())
-            print(a)
-            print(a.shape)
-            print('-'*30)
-            print(x)
+            print('*'*50)
+            print(torch.any(torch.any(x,dim=-1),dim=-1))
         #print(b_norm,x.shape)
         #print('b_norm',torch.isnan(x).any())
         x = self.relu(x)
