@@ -32,6 +32,7 @@ def get_parameter_norm(parameters, norm_type = 2):
 
 def apply_attention_make_batch(tensor,mask,index,tbtt_step,x_length,y_length):
     max_length = x_length // y_length
+    print(max_length)
     tensor_pad = torch.LongTensor(tensor.size(0),tensor.size(1), tbtt_step * max(max_length))
     tensor_pad.zero_()
 
