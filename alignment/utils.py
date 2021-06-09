@@ -31,10 +31,10 @@ def get_parameter_norm(parameters, norm_type = 2):
     return total_norm
 
 def apply_attention_make_batch(tensor,mask,index,tbtt_step,x_length,y_length):
-    tensor_pad = torch.LongTensor(tensor.size(0),tensor.size(1), tbtt_step * max(x_length)//max(y_length[i]))
+    tensor_pad = torch.LongTensor(tensor.size(0),tensor.size(1), tbtt_step * max(x_length)//max(y_length))
     tensor_pad.zero_()
 
-    mask_pad = torch.ones(tensor.size(0), tbtt_step * max(x_length)//max(y_length[i]))
+    mask_pad = torch.ones(tensor.size(0), tbtt_step * max(x_length)//max(y_length))
 
     for i in range(tensor.size(0)):
         
