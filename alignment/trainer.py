@@ -71,7 +71,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         
         with torch.autograd.set_detect_anomaly(True):
             with autocast():
-                while chunk_index < engine.max_target_ratio * y_length.mean():      
+                while chunk_index < engine.max_target_ratio * y_length.tolist().mean():      
                     engine.model.train()
                     engine.optimizer.zero_grad()
 
