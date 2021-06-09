@@ -178,7 +178,8 @@ class MaximumLikelihoodEstimationEngine(Engine):
             encoder_hidden,decoder_hidden = None,None 
             loss_list = []
             chunk_index = 0
-            start_index,attention_index = 0,0
+            start_index = np.zeros((x.size(0),), dtype=int)
+            attention_index = 0
             input_y = mini_batch_tgt[0][:,:-1]
             with autocast():
                 while chunk_index < engine.max_target_ratio * np.mean(y_length.tolist()):      
