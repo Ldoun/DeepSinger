@@ -46,29 +46,32 @@ class MaximumLikelihoodEstimationEngine(Engine):
     @staticmethod
     def train(engine, mini_batch):
         device = next(engine.model.parameters()).device
-        print(mini_batch[2])
-        print('-' * 70)
-        print(mini_batch[1][1])
-        x,mask = mini_batch[0][0],mini_batch[0][1] #tensor,length,mask
+        
+        x,mask,x_length = mini_batch[0][0],mini_batch[0][1],mini_batch[0][2] #tensor,mask,length
         mini_batch_tgt = (mini_batch[1][0],mini_batch[1][1])
+        y_length = mini_batch_tgt[1]
         
         y = mini_batch_tgt[0][:,1:]  #<BOS> 제외 정답문장 1번 단어부터 비교
         #|x| = (batch_size,128,length)
         #|y| = (batch_size,length)
-        x_length = x.size(2)
-        y_length = y.size(1)
         #print('x:',x.size())
         #print('y:',y.size())
+
+        print(x_length)
+        print('-' * 70)
+        print(y_length)
+
         encoder_hidden,decoder_hidden = None,None 
         loss_list = []
         chunk_index = 0
-        start_index,attention_index = 0,0
+        start_index = np.zeros((x.size(0),), dtype=int)
+        attention_index = 0
         input_y = mini_batch_tgt[0][:,:-1]
         #print(engine.max_target_ratio)
         
         with torch.autograd.set_detect_anomaly(True):
             with autocast():
-                while chunk_index < engine.max_target_ratio * y_length:      
+                while chunk_index < engine.max_target_ratio * y_length.mean():      
                     engine.model.train()
                     engine.optimizer.zero_grad()
 
@@ -83,13 +86,14 @@ class MaximumLikelihoodEstimationEngine(Engine):
                         
                     #print('chunk_x:',chunk_x.shape)
                     if encoder_hidden is None:
-                        chunk_x = x[:,:,start_index:start_index + engine.config.tbtt_step * (x_length//y_length)].to(device)
-                        chunk_mask = mask[:,start_index:start_index + engine.config.tbtt_step * (x_length//y_length)].to(device)
+                        chunk_x,chunk_mask = apply_attention_make_batch(x,mask,start_index,engine.config.tbtt_step,x_length,y_length)
+                        chunk_x = chunk_x.to(device)
+                        chunk_mask = chunk_mask.to(device)
 
                         y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),chunk_y)# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
                         
                     else:
-                        chunk_x,chunk_mask = apply_attention_make_batch(x,mask,start_index,engine.config.tbtt_step * (x_length//y_length))
+                        chunk_x,chunk_mask = apply_attention_make_batch(x,mask,start_index,engine.config.tbtt_step , x_length, y_length)
                         chunk_x = chunk_x.to(device)
                         chunk_mask = chunk_mask.to(device)
                         encoder_hidden = detach_hidden(encoder_hidden)
