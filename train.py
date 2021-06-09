@@ -236,7 +236,7 @@ def main(config, model_weight=None, opt_weight=None, vocab = None):
     train_dataset,valid_dataset = random_split(dataset,[config.train_size,config.valid_size],generator=torch.Generator().manual_seed(42))
     
     train_batch_sampler = RandomBucketBatchSampler(train_dataset, batch_size=config.batch_size, drop_last=False)
-    valid_batch_sampler = RandomBucketBatchSampler(valid_dataset, batch_size=config.valid_batch_size, drop_last=False)
+    valid_batch_sampler = RandomBucketBatchSampler(valid_dataset, batch_size=config.valid_batch_size, drop_last=True)
     
     collate_fn = TextAudioCollate()
 
