@@ -179,7 +179,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
             start_index,attention_index = 0,0
             input_y = mini_batch_tgt[0][:,:-1]
             with autocast():
-                while chunk_index < engine.max_target_ratio * y_length:      
+                while chunk_index < engine.max_target_ratio * np.mean(y_length.tolist()):      
                     engine.model.eval()
 
                     chunk_y = input_y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
