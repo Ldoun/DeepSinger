@@ -163,8 +163,6 @@ class MaximumLikelihoodEstimationEngine(Engine):
 
     @staticmethod
     def validate(engine, mini_batch):
-        engine.model.eval()
-
         with torch.no_grad():
             device = next(engine.model.parameters()).device
             x,mask,x_length = mini_batch[0][0],mini_batch[0][1],mini_batch[0][2] #tensor,mask,length
@@ -228,18 +226,13 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     
                     loss_list.append(loss.item())
 
-                    '''torch_utils.clip_grad_norm_(
-                        engine.model.parameters(),
-                        engine.config.max_gr_norm,
-                        #norm_type=2,
-                    )'''#gradient clipping          
-
                     del chunk_y, chunk_y_label, chunk_x, chunk_mask, y_hat, mini_attention,loss
 
         word_count = int(mini_batch_tgt[1].sum())
         loss = float((sum(loss_list)/len(loss_list))/word_count)
         ppl = np.exp(loss)   
-
+        
+        print(loss)
         return {
             'loss': loss,
             'ppl': ppl
