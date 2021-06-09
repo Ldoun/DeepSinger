@@ -169,7 +169,9 @@ class MaximumLikelihoodEstimationEngine(Engine):
             device = next(engine.model.parameters()).device
             x,mask,x_length = mini_batch[0][0],mini_batch[0][1],mini_batch[0][2] #tensor,mask,length
             mini_batch_tgt = (mini_batch[1][0],mini_batch[1][1])
-            y_length = mini_batch_tgt[1]  #<BOS> 제외 정답문장 1번 단어부터 비교
+            y_length = mini_batch_tgt[1] 
+            
+            y = mini_batch_tgt[0][:,1:]  #<BOS> 제외 정답문장 1번 단어부터 비교
             #|x| = (batch_size,128,length)
             #|y| = (batch_size,length)
 
