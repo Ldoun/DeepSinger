@@ -382,11 +382,11 @@ class SingleTrainer():
         super().__init__()
 
     def train(
-        self,local_rank,
+        self, 
         model,crit,optimizer,train_loader,valid_loader,vocab,n_epochs,
         lr_scheduler = None
     ):
-        print(local_rank)
+        #print(local_rank)
         self.train_engine = self.target_engine_class(
             self.target_engine_class.train,
             model, crit, optimizer,lr_scheduler, self.config
