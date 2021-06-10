@@ -125,15 +125,17 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     print('y_hat',torch.isnan(y_hat).any())
                     print('chunk_y_label',torch.isnan(chunk_y_label).any())'''
 
-                    loss_list.append(loss.item())
-
                     if engine.config.gpu_id >=0 or engine.config.multi_gpu:
+                        print(1)
                         engine.scaler.scale(loss).backward()
                         engine.scaler.step(engine.optimizer)
                         engine.scaler.update()
                     else:
                         loss.backward()
                         engine.optimizer.step()
+
+
+                    loss_list.append(loss.item())
 
                     '''torch_utils.clip_grad_norm_(
                         engine.model.parameters(),
@@ -236,6 +238,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         print(loss)
         print('target_ratio',engine.max_target_ratio)
         print('epoch',engine.state.epoch)
+        
         return {
             'loss': loss,
             'ppl': ppl
