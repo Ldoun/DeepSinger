@@ -294,7 +294,7 @@ def main(config, model_weight=None, opt_weight=None, vocab = None):
 
     # Start training. This function maybe equivalant to 'fit' function in Keras.
     mle_trainer = SingleTrainer(MaximumLikelihoodEstimationEngine, config)
-    #add_graph(model,mle_trainer.tb_logger,valid_dataloader)
+    add_graph(model,mle_trainer.tb_logger,valid_dataloader)
     #mle_trainer.tb_logger.writer.add_graph(model=model,input_to_model=,verbose=True)
     
     if config.multi_gpu:
