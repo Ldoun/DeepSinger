@@ -160,7 +160,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         loss = float((sum(loss_list)/len(loss_list))/word_count)
         ppl = np.exp(loss)   
 
-        print('train loss',loss)
+        #print('train loss',loss)
         return {
             'loss': loss,
             'ppl': ppl,
@@ -240,8 +240,8 @@ class MaximumLikelihoodEstimationEngine(Engine):
         ppl = np.exp(loss)   
         
         print(loss)
-        print('target_ratio',engine.max_target_ratio)
-        print('epoch',engine.state.epoch)
+        #print('target_ratio',engine.max_target_ratio)
+        #print('epoch',engine.state.epoch)
         
         return {
             'loss': loss,
