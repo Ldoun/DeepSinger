@@ -46,7 +46,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
 
     @staticmethod
     def train(engine, mini_batch):
-        if config.multi_gput:
+        if engine.config.multi_gpu:
             device = idist.device()
         else:
             device = next(engine.model.parameters()).device
@@ -79,8 +79,8 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     engine.model.train()
                     engine.optimizer.zero_grad()
 
-                    chunk_y = input_y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device,non_blocking=config.multi_gpu)
-                    chunk_y_label = y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device,non_blocking=config.multi_gpu)
+                    chunk_y = input_y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device,non_blocking=engine.config.multi_gpu)
+                    chunk_y_label = y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device,non_blocking=engine.config.multi_gpu)
                     
                     chunk_length = []
                     start_index = start_index + attention_index
@@ -91,15 +91,15 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     #print('chunk_x:',chunk_x.shape)
                     if encoder_hidden is None:
                         chunk_x,chunk_mask = apply_attention_make_batch(x,mask,start_index,engine.config.tbtt_step,x_length,y_length)
-                        chunk_x = chunk_x.to(device,non_blocking=config.multi_gpu)
-                        chunk_mask = chunk_mask.to(device,non_blocking=config.multi_gpu)
+                        chunk_x = chunk_x.to(device,non_blocking=engine.config.multi_gpu)
+                        chunk_mask = chunk_mask.to(device,non_blocking=engine.config.multi_gpu)
 
                         y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),chunk_y)# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
                         
                     else:
                         chunk_x,chunk_mask = apply_attention_make_batch(x,mask,start_index,engine.config.tbtt_step , x_length, y_length)
-                        chunk_x = chunk_x.to(device,non_blocking=config.multi_gpu)
-                        chunk_mask = chunk_mask.to(device,non_blocking=config.multi_gpu)
+                        chunk_x = chunk_x.to(device,non_blocking=engine.config.multi_gpu)
+                        chunk_mask = chunk_mask.to(device,non_blocking=engine.config.multi_gpu)
                         encoder_hidden = detach_hidden(encoder_hidden)
                         decoder_hidden = detach_hidden(decoder_hidden)
                         y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),chunk_y,en_hidden = encoder_hidden,de_hidden = decoder_hidden)# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
@@ -129,7 +129,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     print('y_hat',torch.isnan(y_hat).any())
                     print('chunk_y_label',torch.isnan(chunk_y_label).any())'''
 
-                    if engine.config.gpu_id >=0 or engine.config.multi_gpu:
+                    if engine.config.gpu_id >=0 or engine.engine.config.multi_gpu:
                         print(1)
                         engine.scaler.scale(loss).backward()
                         engine.scaler.step(engine.optimizer)
