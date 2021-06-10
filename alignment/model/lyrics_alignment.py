@@ -14,7 +14,7 @@ from torch.nn.utils.rnn import pad_packed_sequence as unpack
 
 
 
-class   location_sensitive_attention(nn.Module):
+class  location_sensitive_attention(nn.Module):
     def __init__(self,encoder_hidden_size,decoder_hidden_size,attention_dim,location_feature_dim,attention_kernel_size):
         super().__init__()
         self.F = nn.Conv1d(in_channels=1, out_channels=location_feature_dim,
