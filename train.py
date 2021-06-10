@@ -286,7 +286,7 @@ def main(config, model_weight=None, opt_weight=None, vocab = None):
     # Start training. This function maybe equivalant to 'fit' function in Keras.
     mle_trainer = SingleTrainer(MaximumLikelihoodEstimationEngine, config)
 
-    #mle_trainer.tb_logger.writer.add_graph(model=model,input_to_model=torch.randn(128,1,3000).to(device),verbose=True)
+    mle_trainer.tb_logger.writer.add_graph(model=model,input_to_model=torch.randn(1,128,3000).to(next(model.parameters()).device),verbose=True)
     
     if config.multi_gpu:
         backend = "nccl"
