@@ -224,11 +224,12 @@ def get_optimizer(model, config):
     return optimizer
 
 def add_graph(model,tb_logger,dataloader):
-    data = iter(dataloader).next()
-    device = next(model.parameters()).device
-    x,mask,x_length = data[0][0].to(device),data[0][1].to(device),data[0][2] #tensor,mask,length
-    y,_ = (data[1][0][:,:-1].to(device),data[1][1])
-    tb_logger.writer.add_graph(model=model,input_to_model=((x,mask),y) ,verbose=True)
+    with torch.no_grad():
+        data = iter(dataloader).next()
+        device = next(model.parameters()).device
+        x,mask,x_length = data[0][0][:500].to(device),data[0][1][:500].to(device),data[0][2] #tensor,mask,length
+        y,_ = (data[1][0][:,:-1][:,:len(y)//2].to(device),data[1][1])
+        tb_logger.writer.add_graph(model=model,input_to_model=((x,mask),y) ,verbose=True)
 
 
 def main(config, model_weight=None, opt_weight=None, vocab = None):
