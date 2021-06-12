@@ -275,8 +275,8 @@ def main(config, model_weight=None, opt_weight=None, vocab = None):
         crit.to(idist.device())
         train_dataloader = idist.auto_dataloader(train_dataset, batch_sampler=train_batch_sampler,collate_fn=collate_fn)
         valid_dataloader = idist.auto_dataloader(valid_dataset, batch_sampler=valid_batch_sampler,collate_fn=collate_fn)'''
-        model = nn.DataParallel(model,device_ids=[1, 2,3])
-        model.cuda()
+        model = nn.DataParallel(model,device_ids=[1, 2,3],output_device=[1])
+        #model.cuda()
         crit.cuda()
 
     if config.gpu_id >= 0 and not config.multi_gpu:
