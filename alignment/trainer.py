@@ -346,7 +346,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
 
     @staticmethod
     def load_model_for_val(engin,train_engin):
-        engein.model = train_engin.model
+        engin.model = train_engin.model
         print('loded')
         
     @staticmethod
