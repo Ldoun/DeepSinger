@@ -239,7 +239,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         loss = float((sum(loss_list)/len(loss_list))/word_count)
         ppl = np.exp(loss)   
         
-        print(loss)
+        #print(loss)
         #print('target_ratio',engine.max_target_ratio)
         #print('epoch',engine.state.epoch)
         
@@ -343,6 +343,11 @@ class MaximumLikelihoodEstimationEngine(Engine):
         if loss <= engine.best_loss:
             engine.best_loss = loss
             engine.best_model = deepcopy(engine.model.state_dict())
+
+    @staticmethod
+    def load_model_for_val(engin,train_engin):
+        engein.model = train_engin.model
+        print('loded')
         
     @staticmethod
     def save_model(engine, train_engine, config,vocab):
@@ -430,10 +435,17 @@ class SingleTrainer():
         )
 
         self.valid_engine.add_event_handler(
+            Events.EPOCH_STARTED,
+            self.target_engine_class.load_model_for_val,
+            self.train_engine
+        )
+
+        self.valid_engine.add_event_handler(
             Events.EPOCH_COMPLETED, #event
             self.target_engine_class.check_best #func
         )
 
+        
         self.train_engine.add_event_handler(
             Events.STARTED,
             self.target_engine_class.resume_training,
