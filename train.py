@@ -271,22 +271,22 @@ def main(config, model_weight=None, opt_weight=None, vocab = None):
     # Pass models to GPU device if it is necessary.
 
     if config.multi_gpu:
-        model = idist.auto_model(model)
+        '''model = idist.auto_model(model)
         crit.to(idist.device())
         train_dataloader = idist.auto_dataloader(train_dataset, batch_sampler=train_batch_sampler,collate_fn=collate_fn)
-        valid_dataloader = idist.auto_dataloader(valid_dataset, batch_sampler=valid_batch_sampler,collate_fn=collate_fn)
-
+        valid_dataloader = idist.auto_dataloader(valid_dataset, batch_sampler=valid_batch_sampler,collate_fn=collate_fn)'''
+        model = nn.DataParallel(model)
+        model.cuda()
+        crit.cuda()
 
     if config.gpu_id >= 0 and not config.multi_gpu:
         model.cuda(config.gpu_id)
         crit.cuda(config.gpu_id)
-        train_dataloader = DataLoader(train_dataset, batch_sampler=train_batch_sampler,collate_fn=collate_fn)
-        valid_dataloader = DataLoader(valid_dataset, batch_sampler=valid_batch_sampler,collate_fn=collate_fn)
+        #train_dataloader = DataLoader(train_dataset, batch_sampler=train_batch_sampler,collate_fn=collate_fn)
+        #valid_dataloader = DataLoader(valid_dataset, batch_sampler=valid_batch_sampler,collate_fn=collate_fn)
 
-    if config.multi_gpu:
-        optimizer = idist.auto_optim(get_optimizer(model, config))
-    else:
-        optimizer = get_optimizer(model, config)
+
+    optimizer = get_optimizer(model, config)
     
     if opt_weight is not None and (config.use_adam or config.use_radam):
         optimizer.load_state_dict(opt_weight)
@@ -301,30 +301,15 @@ def main(config, model_weight=None, opt_weight=None, vocab = None):
     #add_graph(model,mle_trainer.tb_logger,valid_dataloader)
     #mle_trainer.tb_logger.writer.add_graph(model=model,input_to_model=,verbose=True)
     
-    if config.multi_gpu:
-        backend = "nccl"
-        with idist.Parallel(backend=backend, nproc_per_node=4) as parallel:
-            parallel.run(
-                mle_trainer.train,
-                model,
-                crit,
-                optimizer,
-                train_loader=train_dataloader,
-                valid_loader=valid_dataloader,
-                vocab=tok.vocab,
-                n_epochs=config.n_epochs,
-            )    
-    
-    else:
-        mle_trainer.train(
-                model,
-                crit,
-                optimizer,
-                train_loader=train_dataloader,
-                valid_loader=valid_dataloader,
-                vocab=tok.vocab,
-                n_epochs=config.n_epochs,
-            )
+    mle_trainer.train(
+            model,
+            crit,
+            optimizer,
+            train_loader=train_dataloader,
+            valid_loader=valid_dataloader,
+            vocab=tok.vocab,
+            n_epochs=config.n_epochs,
+        )
 
     mle_trainer.tb_logger.close()
 

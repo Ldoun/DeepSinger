@@ -15,7 +15,6 @@ from ignite.engine import Events
 from ignite.metrics import RunningAverage
 from ignite.contrib.handlers.tqdm_logger import ProgressBar
 from ignite.contrib.handlers.tensorboard_logger import *
-import ignite.distributed as idist
 
 #TODO
 #TBTT 
@@ -46,10 +45,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
 
     @staticmethod
     def train(engine, mini_batch):
-        if engine.config.multi_gpu:
-            device = idist.device()
-        else:
-            device = next(engine.model.parameters()).device
+        device = next(engine.model.parameters()).device
         
         x,mask,x_length = mini_batch[0][0],mini_batch[0][1],mini_batch[0][2] #tensor,mask,length
         mini_batch_tgt = (mini_batch[1][0],mini_batch[1][1])
@@ -79,8 +75,8 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     engine.model.train()
                     engine.optimizer.zero_grad()
 
-                    chunk_y = input_y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device,non_blocking=engine.config.multi_gpu)
-                    chunk_y_label = y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device,non_blocking=engine.config.multi_gpu)
+                    chunk_y = input_y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
+                    chunk_y_label = y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
                     
                     chunk_length = []
                     start_index = start_index + attention_index
@@ -91,15 +87,15 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     #print('chunk_x:',chunk_x.shape)
                     if encoder_hidden is None:
                         chunk_x,chunk_mask = apply_attention_make_batch(x,mask,start_index,engine.config.tbtt_step,x_length,y_length)
-                        chunk_x = chunk_x.to(device,non_blocking=engine.config.multi_gpu)
-                        chunk_mask = chunk_mask.to(device,non_blocking=engine.config.multi_gpu)
+                        chunk_x = chunk_x.to(device)
+                        chunk_mask = chunk_mask.to(device)
 
                         y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),chunk_y)# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
                         
                     else:
                         chunk_x,chunk_mask = apply_attention_make_batch(x,mask,start_index,engine.config.tbtt_step , x_length, y_length)
-                        chunk_x = chunk_x.to(device,non_blocking=engine.config.multi_gpu)
-                        chunk_mask = chunk_mask.to(device,non_blocking=engine.config.multi_gpu)
+                        chunk_x = chunk_x.to(device)
+                        chunk_mask = chunk_mask.to(device)
                         encoder_hidden = detach_hidden(encoder_hidden)
                         decoder_hidden = detach_hidden(decoder_hidden)
                         y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),chunk_y,en_hidden = encoder_hidden,de_hidden = decoder_hidden)# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
@@ -194,8 +190,10 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     chunk_y_label = y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
                     
                     chunk_length = []
-                    start_index = start_index + attention_index
                     
+                    start_index = start_index + attention_index
+                    if chunk_y.device.index == 3:
+                        print('start_index',start_index)
                     #print('start_index',start_index)
                     #print('attention_index',attention_index)
                         
