@@ -157,7 +157,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         #if engine.config.use_noam_decay and engine.lr_scheduler is not None:
         #    engine.lr_scheduler.step()
         #print('loss_list',loss_list)
-        loss = float((sum(loss_list)/len(loss_list))/word_count)
+        loss = float(sum(loss_list)/len(loss_list))
         ppl = np.exp(loss)   
 
         #print('train loss',loss)
@@ -236,7 +236,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     del chunk_y, chunk_y_label, chunk_x, chunk_mask, y_hat, mini_attention,loss
 
         word_count = int(mini_batch_tgt[1].sum())
-        loss = float((sum(loss_list)/len(loss_list))/word_count)
+        loss = float(sum(loss_list)/len(loss_list))
         ppl = np.exp(loss)   
         
         #print(loss)
