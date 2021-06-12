@@ -219,7 +219,11 @@ def get_crit(output_size, pad_index):
 
 def get_optimizer(model, config):
     if config.use_adam:
-        optimizer = optim.Adam(model.parameters(), lr=config.lr,weight_decay=1e-6)
+        optimizer = optim.Adam(
+            model.parameters(), 
+            lr=config.lr,
+            #weight_decay=1e-6
+    )
 
     return optimizer
 
@@ -244,7 +248,7 @@ def main(config, model_weight=None, opt_weight=None, vocab = None):
 
     dataset = LJSpeechDataset(config.music_dir,config.tsv,tok = tok )
 
-    train_dataset,valid_dataset = random_split(dataset,[config.train_size,config.valid_size],generator=torch.Generator().manual_seed(42))
+    train_dataset,valid_dataset = random_split(dataset,[config.train_size,config.valid_size]) #,generator=torch.Generator().manual_seed(42)'''
     
     train_batch_sampler = RandomBucketBatchSampler(train_dataset, batch_size=config.batch_size, drop_last=True)
     valid_batch_sampler = RandomBucketBatchSampler(valid_dataset, batch_size=config.valid_batch_size, drop_last=True)
