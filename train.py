@@ -246,9 +246,17 @@ def main(config, model_weight=None, opt_weight=None, vocab = None):
     if vocab is None:
         tok.set_vocab(config.tsv)
 
-    dataset = LJSpeechDataset(config.music_dir,config.tsv,tok = tok )
+    data = pd.read_csv(f'{config.tsv}', sep='\t',
+                                    usecols=['video_name', 'lyrics'],
+                                    ) 
+    
+    train_data = data[:config.train_size]
+    valid_data = data[config.train_size:]
 
-    train_dataset,valid_dataset = random_split(dataset,[config.train_size,config.valid_size]) #,generator=torch.Generator().manual_seed(42)'''
+    train_dataset = LJSpeechDataset(config.music_dir,train_data,tok = tok )
+    valid_dataset = LJSpeechDataset(config.music_dir,valid_data,tok = tok )
+
+    #train_dataset,valid_dataset = random_split(dataset,[config.train_size,config.valid_size]) #,generator=torch.Generator().manual_seed(42)'''
     
     train_batch_sampler = RandomBucketBatchSampler(train_dataset, batch_size=config.batch_size, drop_last=True)
     valid_batch_sampler = RandomBucketBatchSampler(valid_dataset, batch_size=config.valid_batch_size, drop_last=True)

@@ -26,14 +26,12 @@ import torchaudio
 
 class LJSpeechDataset(data.Dataset):
     
-    def __init__(self, wav_path,tsv_file='data/metadata.csv',tok = None,set_vocab = True,
+    def __init__(self, wav_path,data_frame,tok = None,set_vocab = True,
                  audio_transformer=torchaudio.transforms.MelSpectrogram(sample_rate=22050,n_fft=1024,hop_length=256),
                  sample_rate=22050, sort=True):
         self.wav_path = wav_path
         self.tok = tok
-        self.metadata = pd.read_csv(f'{tsv_file}', sep='\t',
-                                    usecols=['video_name', 'lyrics'],
-                                    ) 
+        self.metadata = data_frame
         self.metadata.dropna(inplace=True)  # Actually, nothing to drop
         self.audio_transformer = audio_transformer
         self.sample_rate = sample_rate
