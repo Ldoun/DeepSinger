@@ -42,7 +42,7 @@ class LJSpeechDataset(data.Dataset):
                     lambda x: len(self.tok.get_idx(x)))
 
             self.metadata.sort_values(by=['length'], inplace=True, ascending=False)
-            self.metadata.head()
+            print(self.metadata.head())
 
     def __getitem__(self, index):
         """
