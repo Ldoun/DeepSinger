@@ -63,7 +63,7 @@ class LJSpeechDataset(data.Dataset):
         text = self.metadata.iloc[index]['lyrics']
         if self.tok:
             text = self.tok.get_idx(text)
-            print(len(text))
+            print(index)
             text = torch.IntTensor(text)
             
         else:
