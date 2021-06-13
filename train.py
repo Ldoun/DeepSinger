@@ -186,6 +186,12 @@ def define_argparser(is_continue=False):
         default='../tensorboard'
     )
 
+    p.add_argument(
+        '--nohup',
+        action='store_true',
+        help='for better background logging',
+    )
+
     config = p.parse_args()
 
     return config
