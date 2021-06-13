@@ -63,7 +63,7 @@ class LJSpeechDataset(data.Dataset):
         text = self.metadata.iloc[index]['lyrics']
         if self.tok:
             text = self.tok.get_idx(text)
-            print(index)
+            print(index, len(text))
             text = torch.IntTensor(text)
             
         else:
@@ -121,7 +121,7 @@ class RandomBucketBatchSampler(object):
 
     def __iter__(self):
         for batch in self.random_batches:
-            #print(batch)
+            print(batch)
             yield batch
 
     def __len__(self):
