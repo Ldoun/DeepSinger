@@ -63,7 +63,9 @@ class LJSpeechDataset(data.Dataset):
         text = self.metadata.iloc[index]['lyrics']
         if self.tok:
             text = self.tok.get_idx(text)
+            print(len(text))
             text = torch.IntTensor(text)
+            
         else:
             print('vocab not specified')
             raise
@@ -150,7 +152,7 @@ class TextAudioCollate(object):
             dim=0, descending=True)
         max_input_len = input_lengths[0]
 
-        print(input_lengths)
+        #print(input_lengths)
 
         text_padded = torch.LongTensor(len(batch), max_input_len)
         text_padded.zero_()
