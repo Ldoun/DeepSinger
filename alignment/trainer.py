@@ -80,7 +80,8 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     
                     chunk_length = []
                     start_index = start_index + attention_index
-                    
+                    if chunk_y.device.index == 3:
+                        print('start_index',start_index)
                     #print('start_index',start_index)
                     #print('attention_index',attention_index)
                         
@@ -192,8 +193,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     chunk_length = []
                     
                     start_index = start_index + attention_index
-                    if chunk_y.device.index == 3:
-                        print('start_index',start_index)
+                    
                     #print('start_index',start_index)
                     #print('attention_index',attention_index)
                         
