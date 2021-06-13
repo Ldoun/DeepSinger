@@ -24,6 +24,8 @@ from ignite.contrib.handlers.tensorboard_logger import *
 #length 제거 -> pack padded sequence 제거
 
 
+#greedy training
+
 VERBOSE_SILENT = 0
 VERBOSE_EPOCH_WISE = 1
 VERBOSE_BATCH_WISE = 2
@@ -71,7 +73,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         
         with torch.autograd.set_detect_anomaly(True):
             with autocast():
-                while chunk_index < engine.max_target_ratio * np.mean(y_length.tolist()):      
+                while chunk_index < engine.max_target_ratio * max(y_length.tolist()):      
                     engine.model.train()
                     engine.optimizer.zero_grad()
 
@@ -187,7 +189,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
             attention_index = 0
             input_y = mini_batch_tgt[0][:,:-1]
             with autocast():
-                while chunk_index < engine.max_target_ratio * np.mean(y_length.tolist()):      
+                while chunk_index < engine.max_target_ratio * max(y_length.tolist()):      
                     engine.model.eval()
 
                     chunk_y = input_y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
