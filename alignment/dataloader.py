@@ -109,7 +109,7 @@ class RandomBucketBatchSampler(object):
         #print(indices)
         batches = [indices[i:i+self.batch_size]
                    for i in range(0, len(indices), self.batch_size)]
-        print(batches)
+        #print(batches)
         if self.drop_last and len(self.sampler) % self.batch_size > 0:
             random_indices = torch.randperm(len(batches)-1).tolist() + [len(batches)-1]
         else:
@@ -118,6 +118,7 @@ class RandomBucketBatchSampler(object):
 
     def __iter__(self):
         for batch in self.random_batches:
+            print(batch)
             yield batch
 
     def __len__(self):
