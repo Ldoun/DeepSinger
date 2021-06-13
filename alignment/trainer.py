@@ -80,8 +80,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     
                     chunk_length = []
                     start_index = start_index + attention_index
-                    print('start_index',start_index)
-                    print('device',engine.model.device.index)
+                    
                     #print('start_index',start_index)
                     #print('attention_index',attention_index)
                         
@@ -108,6 +107,9 @@ class MaximumLikelihoodEstimationEngine(Engine):
                         y_hat.contiguous().view(-1,y_hat.size(-1)),
                         chunk_y_label.contiguous().view(-1)
                     )
+
+                    print('start_index',start_index)
+                    print('device',mini_attention.device.index)
 
                     '''print('chunk_x',chunk_x.shape)
                     print('y_hat',y_hat.contiguous().view(-1,y_hat.size(-1)).shape)
