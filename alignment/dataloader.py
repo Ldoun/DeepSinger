@@ -42,7 +42,7 @@ class LJSpeechDataset(data.Dataset):
                     lambda x: len(self.tok.get_idx(x)))
 
             self.metadata.sort_values(by=['length'], inplace=True, ascending=False)
-        
+            self.metadata.head()
 
     def __getitem__(self, index):
         """
@@ -106,6 +106,7 @@ class RandomBucketBatchSampler(object):
 
     def _make_batches(self):
         indices = [i for i in self.sampler]
+        print(indices)
         batches = [indices[i:i+self.batch_size]
                    for i in range(0, len(indices), self.batch_size)]
         if self.drop_last and len(self.sampler) % self.batch_size > 0:
