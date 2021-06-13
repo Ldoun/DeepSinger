@@ -38,8 +38,9 @@ class LJSpeechDataset(data.Dataset):
         self.audio_transformer = audio_transformer
         self.sample_rate = sample_rate
         if sort:
-            self.metadata['length'] = self.metadata['video_name'].apply(
-                    lambda x: librosa.get_duration(filename=f'{wav_path}/{x}.wav'))
+            self.metadata['length'] = self.metadata['lyrics'].apply(
+                    lambda x: len(x))
+
             self.metadata.sort_values(by=['length'], inplace=True, ascending=False)
         
 
