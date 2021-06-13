@@ -126,7 +126,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     print('y_hat',torch.isnan(y_hat).any())
                     print('chunk_y_label',torch.isnan(chunk_y_label).any())'''
 
-                    if engine.config.gpu_id >=0 or engine.engine.config.multi_gpu:
+                    if engine.config.gpu_id >=0 or engine.config.multi_gpu:
                         #print(1)
                         engine.scaler.scale(loss).backward()
                         engine.scaler.step(engine.optimizer)
