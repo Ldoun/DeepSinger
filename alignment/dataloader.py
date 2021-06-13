@@ -39,7 +39,7 @@ class LJSpeechDataset(data.Dataset):
         self.sample_rate = sample_rate
         if sort:
             self.metadata['length'] = self.metadata['lyrics'].apply(
-                    lambda x: len(x))
+                    lambda x: len(self.tok.get_idx(x)))
 
             self.metadata.sort_values(by=['length'], inplace=True, ascending=False)
         
