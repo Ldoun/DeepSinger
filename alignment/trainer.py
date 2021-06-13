@@ -108,9 +108,9 @@ class MaximumLikelihoodEstimationEngine(Engine):
                         chunk_y_label.contiguous().view(-1)
                     )
 
-                    print('start_index',start_index)
-                    print('device',mini_attention.device.index)
-                    print(y_length)
+                    #print('start_index',start_index)
+                    #print('device',mini_attention.device.index)
+                    #print(y_length)
 
                     '''print('chunk_x',chunk_x.shape)
                     print('y_hat',y_hat.contiguous().view(-1,y_hat.size(-1)).shape)

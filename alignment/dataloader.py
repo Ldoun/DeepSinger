@@ -43,6 +43,7 @@ class LJSpeechDataset(data.Dataset):
 
             self.metadata.sort_values(by=['length'], inplace=True, ascending=False)
             #print(self.metadata.head())
+            self.metadata.to_csv('./data/test.tsv',index = False,sep ='\t')
 
     def __getitem__(self, index):
         """
