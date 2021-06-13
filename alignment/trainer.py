@@ -317,7 +317,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     engine.state.metrics['ppl'],
                 ))
                 if engine.config.nohup:
-                    print('\n')
+                    print(' end \n')
 
         validation_metrics_name = ['loss','ppl']
 
@@ -337,7 +337,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     engine.best_loss
                 ))
                 if engine.config.nohup:
-                    print('\n')
+                    print(' end \n')
 
     @staticmethod
     def resume_training(engine,resume_epoch):
