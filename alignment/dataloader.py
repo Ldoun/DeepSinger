@@ -119,7 +119,7 @@ class RandomBucketBatchSampler(object):
 
     def __iter__(self):
         for batch in self.random_batches:
-            print(batch)
+            #print(batch)
             yield batch
 
     def __len__(self):
@@ -149,6 +149,8 @@ class TextAudioCollate(object):
             torch.LongTensor([len(x[0]) for x in batch]),
             dim=0, descending=True)
         max_input_len = input_lengths[0]
+
+        print(input_lengths)
 
         text_padded = torch.LongTensor(len(batch), max_input_len)
         text_padded.zero_()
