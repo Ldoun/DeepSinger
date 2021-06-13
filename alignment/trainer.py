@@ -78,7 +78,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     chunk_y = input_y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
                     chunk_y_label = y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
                     
-                    chunk_length = []
+                    
                     start_index = start_index + attention_index
                     
                     #print('start_index',start_index)
@@ -110,6 +110,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
 
                     print('start_index',start_index)
                     print('device',mini_attention.device.index)
+                    print(y_length)
 
                     '''print('chunk_x',chunk_x.shape)
                     print('y_hat',y_hat.contiguous().view(-1,y_hat.size(-1)).shape)
@@ -192,7 +193,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     chunk_y = input_y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
                     chunk_y_label = y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
                     
-                    chunk_length = []
+                    
                     
                     start_index = start_index + attention_index
                     
