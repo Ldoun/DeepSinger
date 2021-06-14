@@ -353,7 +353,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
 
     @staticmethod
     def load_model_for_val(engin,train_engin):
-        engin.load_state_dict(train_engin.model.state_dict())
+        engin.model.load_state_dict(train_engin.model.state_dict())
         print('loded')
         
     @staticmethod
