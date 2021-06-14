@@ -255,7 +255,7 @@ class Generator(nn.Module):
         super().__init__()
 
         self.output = nn.Linear(input_size,out_features= output_size) 
-        self.softmax = nn.Softmax(dim = -1) #cross-entrophy 사용
+        self.softmax = nn.LogSoftmax(dim = -1) #cross-entrophy 사용
         
     def forward(self,x):
         y = self.softmax(self.output(x))

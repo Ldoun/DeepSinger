@@ -217,7 +217,7 @@ def get_crit(output_size, pad_index):
     loss_weight[pad_index] = 0.
     # Instead of using Cross-Entropy loss,
     # we can use Negative Log-Likelihood(NLL) loss with log-probability.
-    crit = nn.CrossEntropyLoss(
+    crit = nn.NLLLoss(
         weight=loss_weight,
         reduction='mean'
     )
