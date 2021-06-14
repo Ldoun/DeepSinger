@@ -378,8 +378,8 @@ class alignment_model(nn.Module):
             
             h_tilde += [h_t_tilde]
             attention += [self.attention_weights]
-            print('ipa',ipa.size())
-            
+        
+        print('ipa',ipa.size())
         print(h_tilde)
         h_tilde = torch.cat(h_tilde,dim=1)
         attention = torch.stack(attention,dim=1)
