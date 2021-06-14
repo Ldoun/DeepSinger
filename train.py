@@ -256,7 +256,9 @@ def main(config, model_weight=None, opt_weight=None, vocab = None):
     data = pd.read_csv(f'{config.tsv}', sep='\t',
                                     usecols=['video_name', 'lyrics'],
                                     ) 
-    
+
+    data = data.sample(frac=1).reset_index(drop=True)
+
     train_data = data[:config.train_size]
     valid_data = data[config.train_size:]
 
