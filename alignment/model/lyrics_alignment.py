@@ -255,7 +255,7 @@ class Generator(nn.Module):
         super().__init__()
 
         self.output = nn.Linear(input_size,out_features= output_size) 
-        self.softmax = nn.LogSoftmax(dim = -1) #cross-entrophy 사용
+        self.softmax = nn.LogSoftmax(dim = -1) 
         
     def forward(self,x):
         y = self.softmax(self.output(x))
@@ -370,12 +370,12 @@ class alignment_model(nn.Module):
             self.attention_context_vector, self.attention_weights = self.attention(decoder_output,h_src,cumulative_attention,mask)
             self.cumulative_attention_weights = self.cumulative_attention_weights + self.attention_weights
             
-            #print('decoder_output',decoder_output.shape)
-            #print('attention_context_vector',self.attention_context_vector.shape)
+            print('decoder_output',decoder_output.shape)
+            print('attention_context_vector',self.attention_context_vector.shape)
             h_t_tilde = self.concat(torch.cat([decoder_output,self.attention_context_vector],dim=-1))
             #|h_t_tilde| = (batch_size,1,hidden_size)
-            #print('h_t_tilde', h_t_tilde.shape)
-
+            print('h_t_tilde', h_t_tilde.shape)
+            
             h_tilde += [h_t_tilde]
             attention += [self.attention_weights]
 
