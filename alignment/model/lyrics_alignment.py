@@ -4,6 +4,7 @@ import torch.nn.functional as F
 import numpy as np
 from torch.nn.utils.rnn import pack_padded_sequence as pack
 from torch.nn.utils.rnn import pad_packed_sequence as unpack
+import pickle
 
 #1차 senetence level 분할 모델 학습
 #2차 sentence level 분할 모델을 바탕으로 전이학습하듯 phoneme level 분할 학습을 진행함
@@ -152,6 +153,10 @@ class ConvolutionBlock(nn.Module):
             print('conv1d')
         x = self.b_norm(x)
         if torch.isnan(x).any():
+            with open('makes_nan.pickle','wb') as f:
+                pickle.dump(a,f)
+                raise Exception('nan 발생')
+
             print('b_norm')
             print('*'*50)
             print(torch.any(torch.any(x != 0,dim=2),dim=1))
