@@ -109,27 +109,15 @@ class MaximumLikelihoodEstimationEngine(Engine):
                         y_hat.contiguous().view(-1,y_hat.size(-1)),
                         chunk_y_label.contiguous().view(-1)
                     )
-
-                    #print('start_index',start_index)
-                    #print('device',mini_attention.device.index)
-                    #print(y_length)
-
-                    '''print('chunk_x',chunk_x.shape)
-                    print('y_hat',y_hat.contiguous().view(-1,y_hat.size(-1)).shape)
-                    print('y',chunk_y_label.contiguous().view(-1).shape)'''
+                    
+                    print(chunk_y_label[:,-1])
+                    print(attention_index)
 
                     soft_mask = guided_attentions(mini_attention.shape,engine.config.W)
                     soft_mask = torch.from_numpy(soft_mask).to(device)
                     attn_loss = -(soft_mask * mini_attention).mean() #sum or mean?
-                    #if not torch.isnan(attn_loss):
+                    
                     loss = loss + attn_loss
-                    #|y_hat| = (batch_size,len  gth,ouput_size)
-                    '''print('soft_mask',torch.isnan(soft_mask).any())
-                    print('mini_attention',torch.isnan(mini_attention).any())
-                    print('attn_loss',attn_loss)
-                    print('chunk_x',torch.isnan(chunk_x).any())
-                    print('y_hat',torch.isnan(y_hat).any())
-                    print('chunk_y_label',torch.isnan(chunk_y_label).any())'''
 
                     if engine.config.gpu_id >=0 or engine.config.multi_gpu:
                         #print(1)
@@ -352,11 +340,6 @@ class MaximumLikelihoodEstimationEngine(Engine):
             engine.best_model = deepcopy(engine.model.state_dict())
 
     @staticmethod
-    def load_model_for_val(engin,train_engin):
-        engin.model.load_state_dict(train_engin.model.state_dict())
-        print('loded')
-        
-    @staticmethod
     def save_model(engine, train_engine, config,vocab):
         avg_train_loss = train_engine.state.metrics['loss']
         avg_valid_loss = engine.state.metrics['loss']
@@ -440,13 +423,7 @@ class SingleTrainer():
             run_validation, #func
             self.valid_engine, valid_loader #args
         )
-
-        self.valid_engine.add_event_handler(
-            Events.EPOCH_STARTED,
-            self.target_engine_class.load_model_for_val,
-            self.train_engine
-        )
-
+        
         self.valid_engine.add_event_handler(
             Events.EPOCH_COMPLETED, #event
             self.target_engine_class.check_best #func
