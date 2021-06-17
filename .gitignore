@@ -6,6 +6,7 @@ result.csv
 *.tsv
 *.csv
 *.pth
+*bpe.*
 sample
 
 # Byte-compiled / optimized / DLL files
