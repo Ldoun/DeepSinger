@@ -227,7 +227,7 @@ def get_optimizer(model, config):
         optimizer = optim.Adam(
             model.parameters(), 
             lr=config.lr,
-            #weight_decay=1e-6
+            weight_decay=1e-6
         )
     else:
         optimizer = optim.RMSprop(
