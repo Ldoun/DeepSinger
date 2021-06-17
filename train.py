@@ -233,7 +233,7 @@ def get_optimizer(model, config):
         optimizer = optim.RMSprop(
             model.parameters(), 
             lr=config.lr,
-            #weight_decay=1e-6
+            weight_decay=1e-6
         )
 
     return optimizer

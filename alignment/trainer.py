@@ -110,7 +110,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     
                     '''print(chunk_y_label[:,-1])
                     print(attention_index)'''
-                    
+
                     soft_mask = guided_attentions(mini_attention.shape,engine.config.W)
                     soft_mask = torch.from_numpy(soft_mask).to(device)
                     attn_loss = -(soft_mask * mini_attention).mean() #sum or mean?
@@ -145,7 +145,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         #if engine.config.use_noam_decay and engine.lr_scheduler is not None:
         #    engine.lr_scheduler.step()
         #print('loss_list',loss_list)
-        loss = float(sum(loss_list)/len(loss_list))
+        loss = float((sum(loss_list)/len(loss_list))/word_count)
         ppl = np.exp(loss)   
 
         #print('train loss',loss)
@@ -225,7 +225,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     del chunk_y, chunk_y_label, chunk_x, chunk_mask, y_hat, mini_attention,loss
 
         word_count = int(mini_batch_tgt[1].sum())
-        loss = float(sum(loss_list)/len(loss_list))
+        loss = float((sum(loss_list)/len(loss_list))/word_count)
         ppl = np.exp(loss)   
         
         #print(loss)
