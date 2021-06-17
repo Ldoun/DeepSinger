@@ -31,12 +31,6 @@ def define_argparser(is_continue=False):
         required=not is_continue,
         help='Model file name to save. Additional information would be annotated to the file name.'
     )
-
-    p.add_argument(
-        '--tsv',
-        required=not is_continue,
-        help='Training set file name'
-    )
     
     p.add_argument(
         '--music_dir',
@@ -45,17 +39,21 @@ def define_argparser(is_continue=False):
     )
 
     p.add_argument(
-        '--train_size',
-        type=int,
-        default=2000,
-        help='length of train set'
+        '--bpe_model',
+        required=not is_continue,
+        help='bpe_model file name'
+    )
+
+    p.add_argument(
+        '--train_f',
+        required=not is_continue,
+        help='Training set file name'
     )
     
     p.add_argument(
-        '--valid_size',
-        type=int,
-        default=838,
-        help='length of valid set'
+        '--valid_f',
+        required=not is_continue,
+        help='validation set file name'
     )
 
     p.add_argument(
@@ -270,7 +268,7 @@ def main(config, model_weight=None, opt_weight=None):
     #train_dataset,valid_dataset = random_split(dataset,[config.train_size,config.valid_size]) #,generator=torch.Generator().manual_seed(42)'''
     
     train_batch_sampler = RandomBucketBatchSampler(train_dataset, batch_size=config.batch_size, drop_last=True)
-    valid_batch_sampler = RandomBucketBatchSampler(valid_dataset, batch_size=config.valid_batch_size, drop_last=True)
+    valid_batch_sampler = RandomBucketBatchSampler(valid_dataset, batch_size=config.batch_size, drop_last=True)
     
     collate_fn = TextAudioCollate()
 
@@ -290,13 +288,9 @@ def main(config, model_weight=None, opt_weight=None):
     # Pass models to GPU device if it is necessary.
 
     if config.multi_gpu:
-        '''model = idist.auto_model(model)
-        crit.to(idist.device())
-        train_dataloader = idist.auto_dataloader(train_dataset, batch_sampler=train_batch_sampler,collate_fn=collate_fn)
-        valid_dataloader = idist.auto_dataloader(valid_dataset, batch_sampler=valid_batch_sampler,collate_fn=collate_fn)'''
-        model = nn.DataParallel(model,device_ids=[1, 2,3])
-        model.to(f'cuda:{model.device_ids[0]}')
-        crit.to('cuda:1')
+        model = nn.DataParallel(model)
+        model.cuda()
+        crit.cuda()
 
     if config.gpu_id >= 0 and not config.multi_gpu:
         model.cuda(config.gpu_id)
