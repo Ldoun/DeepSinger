@@ -14,7 +14,6 @@ from ignite.engine import Engine
 from ignite.engine import Events
 from ignite.metrics import RunningAverage
 from ignite.contrib.handlers.tqdm_logger import ProgressBar
-from ignite.contrib.handlers.tensorboard_logger import *
 
 #TODO
 #TBTT 
@@ -43,7 +42,6 @@ class MaximumLikelihoodEstimationEngine(Engine):
         self.best_loss =np.inf
         self.best_model = None
         self.scaler = GradScaler()
-        #self.tbtt_step = tbtt_step
 
     @staticmethod
     def train(engine, mini_batch):
@@ -110,9 +108,9 @@ class MaximumLikelihoodEstimationEngine(Engine):
                         chunk_y_label.contiguous().view(-1)
                     )
                     
-                    print(chunk_y_label[:,-1])
-                    print(attention_index)
-
+                    '''print(chunk_y_label[:,-1])
+                    print(attention_index)'''
+                    
                     soft_mask = guided_attentions(mini_attention.shape,engine.config.W)
                     soft_mask = torch.from_numpy(soft_mask).to(device)
                     attn_loss = -(soft_mask * mini_attention).mean() #sum or mean?
