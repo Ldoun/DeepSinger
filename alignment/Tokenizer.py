@@ -1,71 +1,25 @@
 import pickle
 import os
 import pandas as pd
+import sentencepiece as spm
 
 class tokenizer(object):
-    def __init__(self,v):
+    def __init__(self,bpe_model):
         super().__init__()
-        self.eos = 2
-        self.sos = 1
         self.pad = 0
+        self.unk = 1
+        self.bos = 2
+        self.eos = 3
         
-        self.vocab = {'<PAD>':self.pad,'<SOS>':self.sos,'<EOS>':self.eos}
-        if v is not None:
-            self.vocab = vocab
+        self.vocab = spm.SentencePieceProcessor(model_file=bpe_model)
 
-        '''self.vocab_f = vocab_f
-        if os.path.isfile(self.vocab_f):
-            with open(self.vocab_f, 'rb') as fr:
-                self.vocab = pickle.load(fr)'''
-        
-    def get_idx(self,words):
-        if isinstance(words,list):
-            result = ['<SOS>']
-            for w in words:
-                result.append(self.vocab[w])
-            result.append('<EOS>')
-        
-        if isinstance(words,str):
-            result = [self.sos]
-            words = words.split(' ')
-            for w in words:
-                result.append(self.vocab[w])
-            result.append(self.eos)
-        else:
-            print('wrong input type')
-            raise
-        
-        return result
+    def get_idx(self,line):
+        ids = self.vocab.encode_as_ids(line)
+        return ids
 
     def get_word(self,idx):
-        if isinstance(idx,list):
-            result = []
-            for i in idx:
-                list(self.vocab.keys())[list(self.vocab.values()).index(i)]
-        else:
-            list(self.vocab.keys())[list(self.vocab.values()).index(idx)]
-        
+        result = self.vocab.decode(idx)
         return result
 
-    def make_vocab(self,sentences):
-        #print(sentences)
-        for word in sentences.split(' '):
-            if isinstance(word,str):
-                if word not in self.vocab.keys():
-                    self.vocab[word] = len(self.vocab)
-
-    def save(self):
-        with open(self.vocab_f,'wb') as f:
-            pickle.dump(self.vocab, f)
-
-    def set_vocab(self,tsv_file):
-        metadata = pd.read_csv(f'{tsv_file}', sep='\t',
-                                    usecols=['video_name', 'lyrics'],
-                                    ) 
-
-        for i in metadata['lyrics'].values:
-            self.make_vocab(i)
-        
-        #print(self.vocab)
 
     

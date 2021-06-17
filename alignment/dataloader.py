@@ -26,7 +26,7 @@ import torchaudio
 
 class LJSpeechDataset(data.Dataset):
     
-    def __init__(self, wav_path,data_frame,tok = None,set_vocab = True,
+    def __init__(self, wav_path,data_frame,tok,
                  audio_transformer=torchaudio.transforms.MelSpectrogram(sample_rate=22050,n_fft=1024,hop_length=256,normalized=True),
                  sample_rate=22050, sort=True):
         self.wav_path = wav_path
@@ -59,14 +59,10 @@ class LJSpeechDataset(data.Dataset):
 
     def _get_text(self, index):
         text = self.metadata.iloc[index]['lyrics']
-        if self.tok:
-            text = self.tok.get_idx(text)
-            #print(index, len(text))
-            text = torch.IntTensor(text)
-            
-        else:
-            print('vocab not specified')
-            raise
+        text = self.tok.get_idx(text)
+        #print(index, len(text))
+        text = torch.IntTensor(text)
+
         return text
 
     def _get_audio(self, index):
@@ -197,7 +193,7 @@ def get_mask_from_lengths(lengths):
 
 if __name__ == '__main__':
     # Test LJSpeechDataset
-    import sys
+    '''import sys
     from Tokenizer import tokenizer
     import os
     wav_path = './sample'
@@ -205,7 +201,7 @@ if __name__ == '__main__':
 
     tok = tokenizer(None)
     tok.set_vocab(tsv_file)
-    dataset = LJSpeechDataset(wav_path, tsv_file,tok = tok)
+    dataset = LJSpeechDataset(wav_path, tsv_file,tok = tok)'''
     print(len(dataset))
     for i, data in enumerate(dataset):
         text, audio = data

@@ -249,24 +249,20 @@ def add_graph(model,tb_logger,dataloader):
         tb_logger.writer.add_graph(model=model,input_to_model=((x,mask),y) ,verbose=True)
 
 
-def main(config, model_weight=None, opt_weight=None, vocab = None):
+def main(config, model_weight=None, opt_weight=None):
     def print_config(config):
         pp = pprint.PrettyPrinter(indent=4)
         pp.pprint(vars(config))
     print_config(config)
 
-    tok = tokenizer(vocab)
-    if vocab is None:
-        tok.set_vocab(config.tsv)
+    tok = tokenizer(config.bpe_model)
 
-    data = pd.read_csv(f'{config.tsv}', sep='\t',
+    train_data = pd.read_csv(f'{config.train_f}', sep='\t',
                                     usecols=['video_name', 'lyrics'],
-                                    ) 
-
-    data = data.sample(frac=1).reset_index(drop=True)
-
-    train_data = data[:config.train_size]
-    valid_data = data[config.train_size:]
+                                    )
+    valid_data = pd.read_csv(f'{config.valid_f}', sep='\t',
+                                    usecols=['video_name', 'lyrics'],
+                                    )
 
     train_dataset = LJSpeechDataset(config.music_dir,train_data,tok = tok )
     valid_dataset = LJSpeechDataset(config.music_dir,valid_data,tok = tok )
@@ -330,7 +326,6 @@ def main(config, model_weight=None, opt_weight=None, vocab = None):
             optimizer,
             train_loader=train_dataloader,
             valid_loader=valid_dataloader,
-            vocab=tok.vocab,
             n_epochs=config.n_epochs,
         )
 

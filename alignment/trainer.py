@@ -340,7 +340,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
             engine.best_model = deepcopy(engine.model.state_dict())
 
     @staticmethod
-    def save_model(engine, train_engine, config,vocab):
+    def save_model(engine, train_engine, config):
         avg_train_loss = train_engine.state.metrics['loss']
         avg_valid_loss = engine.state.metrics['loss']
 
@@ -361,8 +361,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
             {
                 'model':engine.model.state_dict(),
                 'opt': train_engine.optimizer.state_dict(),
-                'config': config,
-                'vocab' : vocab,
+                'config': config
             },model_fn
             )
 
@@ -378,7 +377,7 @@ class SingleTrainer():
 
     def train(
         self, 
-        model,crit,optimizer,train_loader,valid_loader,vocab,n_epochs,
+        model,crit,optimizer,train_loader,valid_loader,n_epochs,
         lr_scheduler = None
     ):
         #print(local_rank)
@@ -439,8 +438,7 @@ class SingleTrainer():
         self.valid_engine.add_event_handler(
             Events.EPOCH_COMPLETED, #event
             self.target_engine_class.save_model, # func
-            self.train_engine, self.config,
-            vocab #args
+            self.train_engine, self.config
         )
 
         self.train_engine.run(
