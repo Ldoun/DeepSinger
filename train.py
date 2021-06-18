@@ -167,6 +167,34 @@ def define_argparser(is_continue=False):
     )
 
     p.add_argument(
+        '--lr_step',
+        type=int,
+        default=1,
+        help='Number of epochs for each learning rate decay. Default=%(default)s',
+    )
+
+    p.add_argument(
+        '--lr_gamma',
+        type=float,
+        default=.5,
+        help='Learning rate decay rate. Default=%(default)s',
+    )
+
+    p.add_argument(
+        '--lr_decay_start',
+        type=int,
+        default=10,
+        help='Learning rate decay start at. Default=%(default)s',
+    )
+
+    p.add_argument(
+        '--lr_decay_end',
+        type=int,
+        default=10,
+        help='Learning rate decay end at. Default=%(default)s',
+    )
+
+    p.add_argument(
         '--use_adam',
         action='store_true',
         help='Use Adam as optimizer instead of SGD. Other lr arguments should be changed.',
@@ -239,6 +267,24 @@ def get_optimizer(model, config):
 
     return optimizer
 
+def get_scheduler(optimizer, config):
+    if config.lr_step > 0:
+        lr_scheduler = optim.lr_scheduler.MultiStepLR(
+            optimizer,
+            milestones=[i for i in range(
+                max(0, config.lr_decay_start - 1),
+                config.lr_decay_end -1,
+                config.lr_step
+            )],
+            gamma=config.lr_gamma,
+            last_epoch=config.init_epoch - 1 if config.init_epoch > 1 else -1,
+        )
+    else:
+        lr_scheduler = None
+
+    return lr_scheduler
+
+
 def add_graph(model,tb_logger,dataloader):
     with torch.no_grad():
         data = iter(dataloader).next()
@@ -305,6 +351,8 @@ def main(config, model_weight=None, opt_weight=None):
     if opt_weight is not None and (config.use_adam or config.use_radam):
         optimizer.load_state_dict(opt_weight)
 
+    lr_scheduler = get_scheduler(optimizer, config)
+
     if config.verbose >= 2:
         print(model)
         print(crit)
@@ -322,6 +370,7 @@ def main(config, model_weight=None, opt_weight=None):
             train_loader=train_dataloader,
             valid_loader=valid_dataloader,
             n_epochs=config.n_epochs,
+            lr_scheduler=lr_scheduler,
         )
 
     mle_trainer.tb_logger.close()

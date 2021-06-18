@@ -141,7 +141,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         p_norm = float(get_parameter_norm(engine.model.parameters())) #모델의 복잡도 학습됨에 따라 커져야함
         g_norm = float(get_grad_norm(engine.model.parameters()))    #클수록 뭔가 배우는게 변하는게 많다 (학습의 안정성)
 
-
+        engine.lr_scheduler.step()
         #if engine.config.use_noam_decay and engine.lr_scheduler is not None:
         #    engine.lr_scheduler.step()
         #print('loss_list',loss_list)
