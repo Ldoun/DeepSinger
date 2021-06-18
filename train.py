@@ -362,7 +362,7 @@ def main(config, model_weight=None, opt_weight=None):
     mle_trainer = SingleTrainer(MaximumLikelihoodEstimationEngine, config)
     #add_graph(model,mle_trainer.tb_logger,valid_dataloader)
     #mle_trainer.tb_logger.writer.add_graph(model=model,input_to_model=,verbose=True)
-    mle_trainer.tb_logger.writer.add_hparams(vars(config),{})
+    mle_trainer.tb_logger.writer.add_text('hp',str(config),0)
     
     mle_trainer.train(
             model,
