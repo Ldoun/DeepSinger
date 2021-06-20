@@ -6,7 +6,8 @@ result.csv
 *.tsv
 *.csv
 *.pth
-*bpe.*
+*.model
+*.vocab
 sample
 
 # Byte-compiled / optimized / DLL files
