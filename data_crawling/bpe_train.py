@@ -13,5 +13,5 @@ spm.SentencePieceTrainer.train(
     " --unk_id=1 --unk_piece=[UNK]" + # unknown (1)
     " --bos_id=2 --bos_piece=[BOS]" + # begin of sequence (2)
     " --eos_id=3 --eos_piece=[EOS]" + # end of sequence (3)
-    "--character_coverage=1.0" 
+    " --character_coverage=1.0" 
 ) 

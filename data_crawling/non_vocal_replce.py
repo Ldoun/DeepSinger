@@ -3,6 +3,7 @@ import sys
 import os
 import matplotlib.pyplot as plt
 from scipy.io.wavfile import write
+import numpy as np
 
 music_dir = sys.argv[1]
 output_dir = sys.argv[2]
