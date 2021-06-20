@@ -309,6 +309,8 @@ def main(config, model_weight=None, opt_weight=None):
                                     usecols=['video_name', 'lyrics'],
                                     )
 
+    train_data = train_data.sample(frac=1).reset_index(drop=True) 
+    
     train_dataset = LJSpeechDataset(config.music_dir,train_data,tok = tok )
     valid_dataset = LJSpeechDataset(config.music_dir,valid_data,tok = tok )
 
