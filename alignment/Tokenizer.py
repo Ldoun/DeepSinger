@@ -15,6 +15,7 @@ class tokenizer(object):
 
     def get_idx(self,line):
         ids = self.vocab.encode_as_ids(line)
+        ids = [self.vocab.bos_id()] + ids + [self.vocab.eos_id()]
         return ids
 
     def get_word(self,idx):
