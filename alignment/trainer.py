@@ -61,6 +61,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         #print('-' * 70)
         #print(y_length)
 
+        total_acc, total_count = 0, 0
         encoder_hidden,decoder_hidden = None,None 
         loss_list = []
         attention_loss_list = []
@@ -108,7 +109,11 @@ class MaximumLikelihoodEstimationEngine(Engine):
                         y_hat.contiguous().view(-1,y_hat.size(-1)),
                         chunk_y_label.contiguous().view(-1)
                     )
-                    
+
+                    total_acc += (y_hat.argmax(1) == chunk_y_label).sum().item()
+                    total_count += chunk_y_label.size(1)
+
+
                     '''print(chunk_y_label[:,-1])
                     print(attention_index)'''
 
@@ -139,7 +144,6 @@ class MaximumLikelihoodEstimationEngine(Engine):
 
                     del chunk_y, chunk_y_label, chunk_x, chunk_mask, y_hat, mini_attention,loss
                         
-        word_count = int(mini_batch_tgt[1].sum())
         p_norm = float(get_parameter_norm(engine.model.parameters())) #모델의 복잡도 학습됨에 따라 커져야함
         g_norm = float(get_grad_norm(engine.model.parameters()))    #클수록 뭔가 배우는게 변하는게 많다 (학습의 안정성)
 
@@ -154,6 +158,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         #print('train loss',loss)
         return {
             'loss': loss,
+            'acc' : total_acc/total_count,
             'ppl': ppl,
             'attention':attention_loss,
             '|g_param|': g_norm if not np.isnan(g_norm) and not np.isinf(g_norm) else 0.,
@@ -172,6 +177,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
             #|x| = (batch_size,128,length)
             #|y| = (batch_size,length)
 
+            total_acc, total_count = 0, 0
             encoder_hidden,decoder_hidden = None,None 
             loss_list = []
             chunk_index = 0
@@ -191,6 +197,9 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     y.contiguous().view(-1)
                 )
 
+                total_acc += (y_hat.argmax(1) == y).sum().item()
+                total_count += y.size(1)
+
                 soft_mask = guided_attentions(mini_attention.shape,engine.config.W)
                 soft_mask = torch.from_numpy(soft_mask).to(device)
                 attn_loss = -(soft_mask * mini_attention).mean() #sum or mean?
@@ -204,6 +213,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
     
         return {
             'loss': loss,
+            'acc' : total_acc/total_count,
             'ppl': ppl,
             'attention':attention_loss
         }
@@ -254,7 +264,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 metric_name
             )
 
-        training_metric_name = ['loss', 'ppl', 'attention', '|p_param|', '|g_param|']
+        training_metric_name = ['loss','acc', 'ppl', 'attention', '|p_param|', '|g_param|']
 
         for metric_name in training_metric_name:
             attach_running_average(train_engine, metric_name)
@@ -266,11 +276,12 @@ class MaximumLikelihoodEstimationEngine(Engine):
         if verbose >= VERBOSE_EPOCH_WISE:
             @train_engine.on(Events.EPOCH_COMPLETED)
             def print_train_logs(engine):
-                print('Epoch {} - |p_params| = {:.2e} |g_param| = {:.2e} loss = {:.4e} ppl = {:.4f} attention = {:.4f}'.format(
+                print('Epoch {} - |p_params| = {:.2e} |g_param| = {:.2e} loss = {:.4e} acc = {:.4e} ppl = {:.4f} attention = {:.4f}'.format(
                     engine.state.epoch,
                     engine.state.metrics['|p_param|'],
                     engine.state.metrics['|g_param|'],
                     engine.state.metrics['loss'],
+                    engine.state.metrics['acc'],
                     engine.state.metrics['ppl'],
                     engine.state.metrics['attention']
                 ))
