@@ -116,6 +116,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     attn_loss = -(soft_mask * mini_attention).mean() #sum or mean?
                     
                     loss = loss + attn_loss
+                    attention_loss_list = float(attn_loss)
 
                     if engine.config.gpu_id >=0 or engine.config.multi_gpu:
                         #print(1)
@@ -147,11 +148,13 @@ class MaximumLikelihoodEstimationEngine(Engine):
         #print('loss_list',loss_list)
         loss = float(sum(loss_list)/len(loss_list))
         ppl = np.exp(loss)   
+        attention_loss = float(sum(attention_loss_list)/len(attention_loss))
 
         #print('train loss',loss)
         return {
             'loss': loss,
             'ppl': ppl,
+            'attention':attention_loss,
             '|g_param|': g_norm if not np.isnan(g_norm) and not np.isinf(g_norm) else 0.,
             '|p_param|': p_norm if not np.isnan(p_norm) and not np.isinf(p_norm) else 0.,
         }
@@ -250,7 +253,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 metric_name
             )
 
-        training_metric_name = ['loss', 'ppl', '|p_param|', '|g_param|']
+        training_metric_name = ['loss', 'ppl', 'attention', '|p_param|', '|g_param|']
 
         for metric_name in training_metric_name:
             attach_running_average(train_engine, metric_name)
@@ -262,12 +265,13 @@ class MaximumLikelihoodEstimationEngine(Engine):
         if verbose >= VERBOSE_EPOCH_WISE:
             @train_engine.on(Events.EPOCH_COMPLETED)
             def print_train_logs(engine):
-                print('Epoch {} - |p_params| = {:.2e} |g_param| = {:.2e} loss = {:.4e} ppl = {:.4f}'.format(
+                print('Epoch {} - |p_params| = {:.2e} |g_param| = {:.2e} loss = {:.4e} ppl = {:.4f} attention = {:.4f}'.format(
                     engine.state.epoch,
                     engine.state.metrics['|p_param|'],
                     engine.state.metrics['|g_param|'],
                     engine.state.metrics['loss'],
                     engine.state.metrics['ppl'],
+                    engine.state.metrics['attention']
                 ))
                 if engine.config.nohup:
                     print(' end \n')
