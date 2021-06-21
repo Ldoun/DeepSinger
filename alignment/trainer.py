@@ -148,7 +148,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         #print('loss_list',loss_list)
         loss = float(sum(loss_list)/len(loss_list))
         ppl = np.exp(loss)   
-        attention_loss = float(sum(attention_loss_list)/len(attention_loss))
+        attention_loss = float(sum(attention_loss_list)/len(attention_loss_list))
 
         #print('train loss',loss)
         return {
