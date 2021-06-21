@@ -110,7 +110,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                         chunk_y_label.contiguous().view(-1)
                     )
 
-                    total_acc += (y_hat.argmax(1).view(-1,y_hat.size(-1)) == chunk_y_label.view(-1)).sum().item()
+                    total_acc += (y_hat.argmax(-1).view(-1,y_hat.size(-1)) == chunk_y_label.view(-1)).sum().item()
                     total_count += chunk_y_label.size(1)
 
 
@@ -197,7 +197,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     y.contiguous().view(-1)
                 )
 
-                total_acc += (y_hat.argmax(1).view(-1,y_hat.size(-1)) == y.view(-1)).sum().item()
+                total_acc += (y_hat.argmax(-1).view(-1,y_hat.size(-1)) == y.view(-1)).sum().item()
                 total_count += y.size(1)
 
                 soft_mask = guided_attentions(mini_attention.shape,engine.config.W)
