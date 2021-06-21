@@ -63,6 +63,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
 
         encoder_hidden,decoder_hidden = None,None 
         loss_list = []
+        attention_loss_list = []
         chunk_index = 0
         start_index = np.zeros((x.size(0),), dtype=int)
         attention_index = 0
@@ -116,7 +117,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     attn_loss = -(soft_mask * mini_attention).mean() #sum or mean?
                     
                     loss = loss + attn_loss
-                    attention_loss_list = float(attn_loss)
+                    attention_loss_list.append(float(attn_loss))
 
                     if engine.config.gpu_id >=0 or engine.config.multi_gpu:
                         #print(1)
