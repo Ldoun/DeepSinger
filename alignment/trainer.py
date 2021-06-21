@@ -175,66 +175,33 @@ class MaximumLikelihoodEstimationEngine(Engine):
             attention_index = 0
             input_y = mini_batch_tgt[0][:,:-1]
             with autocast():
-                while chunk_index <  max(y_length.tolist()) -1 :      
-                    engine.model.eval()
+                engine.model.eval()
+                y = y.to(device)
+                x = x.to(device)
+                mask = mask.to(device)
 
-                    chunk_y = input_y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
-                    chunk_y_label = y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
-                    
-                    
-                    
-                    start_index = start_index + attention_index
-                    
-                    #print('start_index',start_index)
-                    #print('attention_index',attention_index)
-                        
-                    #print('chunk_x:',chunk_x.shape)
-                    if encoder_hidden is None:
-                        chunk_x,chunk_mask = apply_attention_make_batch(x,mask,start_index,engine.config.tbtt_step,x_length,y_length)
-                        chunk_x = chunk_x.to(device)
-                        chunk_mask = chunk_mask.to(device)
+                y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((x,mask),mini_batch_tgt[0][:,:-1].to(device))# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
 
-                        y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),chunk_y)# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
+                loss = engine.crit(
+                    y_hat.contiguous().view(-1,y_hat.size(-1)),
+                    y.contiguous().view(-1)
+                )
 
-                    else:
-                        chunk_x,chunk_mask = apply_attention_make_batch(x,mask,start_index,engine.config.tbtt_step,x_length,y_length)
-                        chunk_x = chunk_x.to(device)
-                        chunk_mask = chunk_mask.to(device)
-
-                        encoder_hidden = detach_hidden(encoder_hidden)
-                        decoder_hidden = detach_hidden(decoder_hidden)
-                        y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),chunk_y,en_hidden = encoder_hidden,de_hidden = decoder_hidden)# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
-                    
-                    attention_index = np.array(torch.argmax(mini_attention[:,-1,:],dim=1).tolist())
-                    chunk_index = chunk_index + engine.config.tbtt_step
-
-                    loss = engine.crit(
-                        y_hat.contiguous().view(-1,y_hat.size(-1)),
-                        chunk_y_label.contiguous().view(-1)
-                    )
-
-                    soft_mask = guided_attentions(mini_attention.shape,engine.config.W)
-                    soft_mask = torch.from_numpy(soft_mask).to(device)
-                    attn_loss = -(soft_mask * mini_attention).mean() #sum or mean?
-                    loss = loss + attn_loss
-                    #|y_hat| = (batch_size,length,ouput_size)
-                    
-                    
-                    loss_list.append(loss.item())
-
-                    del chunk_y, chunk_y_label, chunk_x, chunk_mask, y_hat, mini_attention,loss
+                soft_mask = guided_attentions(mini_attention.shape,engine.config.W)
+                soft_mask = torch.from_numpy(soft_mask).to(device)
+                attn_loss = -(soft_mask * mini_attention).mean() #sum or mean?
+                #loss = loss + attn_loss
+                #|y_hat| = (batch_size,length,ouput_size)
 
         word_count = int(mini_batch_tgt[1].sum())
-        loss = float(sum(loss_list)/len(loss_list))
+        loss = float(loss)
+        attention_loss = float(attn_loss)
         ppl = np.exp(loss)   
-        
-        #print(loss)
-        #print('target_ratio',engine.max_target_ratio)
-        #print('epoch',engine.state.epoch)
-        
+    
         return {
             'loss': loss,
-            'ppl': ppl
+            'ppl': ppl,
+            'attention':attention_loss
         }
 
     @staticmethod
