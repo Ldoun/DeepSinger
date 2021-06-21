@@ -288,7 +288,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 if engine.config.nohup:
                     print(' end \n')
 
-        validation_metrics_name = ['loss','ppl','attention']
+        validation_metrics_name = ['loss','ppl','attention','acc']
 
         for metrics in validation_metrics_name:
             attach_running_average(validation_engine, metrics)
@@ -300,8 +300,9 @@ class MaximumLikelihoodEstimationEngine(Engine):
         if verbose >= VERBOSE_EPOCH_WISE:
             @validation_engine.on(Events.EPOCH_COMPLETED)
             def print_valid_logs(engine):
-                print('Validation - loss = {:.4e} ppl = {:.4f} attention = {:.4f} best_loss = {:.4e}'.format(             
+                print('Validation - loss = {:.4e} acc = {:.4e} ppl = {:.4f} attention = {:.4f} best_loss = {:.4e}'.format(             
                     engine.state.metrics['loss'],
+                    engine.state.metrics['acc'],
                     engine.state.metrics['ppl'],
                     engine.state.metrics['attention'],
                     engine.best_loss
