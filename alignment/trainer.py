@@ -110,6 +110,10 @@ class MaximumLikelihoodEstimationEngine(Engine):
                         chunk_y_label.contiguous().view(-1)
                     )
 
+                    print('y_hat',y_hat.shape)
+                    print('y_hat',y_hat.argmax(-1).shape)
+                    print('chunk_y'.shape)
+                    
                     total_acc += (y_hat.argmax(-1).view(-1,y_hat.size(-1)) == chunk_y_label.view(-1)).sum().item()
                     total_count += chunk_y_label.size(1)
 
