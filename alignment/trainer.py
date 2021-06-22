@@ -36,7 +36,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         self.optimizer = optimizer
         self.lr_scheduler = lr_scheduler
         self.config = config
-        self.max_target_ratio = self.conifg.max_ratio
+        self.max_target_ratio = self.config.max_ratio
         super().__init__(func)
 
         self.best_loss =np.inf
