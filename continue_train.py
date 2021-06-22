@@ -44,9 +44,8 @@ def continue_main(config, main):
 
         model_weight = saved_data['model']
         opt_weight = saved_data['opt']
-        vocab = saved_data['vocab']
 
-        main(config, model_weight=model_weight, opt_weight=opt_weight, vocab = vocab)
+        main(config, model_weight=model_weight, opt_weight=opt_weight)
     else:
         print('Cannot find file %s' % config.load_fn)
 
