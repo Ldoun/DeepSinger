@@ -344,6 +344,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
             {
                 'model':engine.model.state_dict(),
                 'opt': train_engine.optimizer.state_dict(),
+                'scaler': train_engine.scaler.state_dict(),
                 'config': config
             },model_fn
             )
@@ -361,13 +362,16 @@ class SingleTrainer():
     def train(
         self, 
         model,crit,optimizer,train_loader,valid_loader,n_epochs,
-        lr_scheduler = None
+        lr_scheduler = None, scaler_weight = None
     ):
         #print(local_rank)
         self.train_engine = self.target_engine_class(
             self.target_engine_class.train,
             model, crit, optimizer,lr_scheduler, self.config
         )
+
+        if scaler_weight is not None:
+            self.train_engine.scaler.load_state_dict(scaler_weight)
 
         self.valid_engine = self.target_engine_class(
             self.target_engine_class.validate,

@@ -302,7 +302,7 @@ def add_graph(model,tb_logger,dataloader):
         tb_logger.writer.add_graph(model=model,input_to_model=((x,mask),y) ,verbose=True)
 
 
-def main(config, model_weight=None, opt_weight=None):
+def main(config, model_weight=None, opt_weight=None, scaler_weight = None):
     def print_config(config):
         pp = pprint.PrettyPrinter(indent=4)
         pp.pprint(vars(config))
@@ -382,6 +382,7 @@ def main(config, model_weight=None, opt_weight=None):
             valid_loader=valid_dataloader,
             n_epochs=config.n_epochs,
             lr_scheduler=lr_scheduler,
+            scaler_weight = scaler_weight,
         )
 
     mle_trainer.tb_logger.close()
