@@ -72,11 +72,11 @@ class MaximumLikelihoodEstimationEngine(Engine):
         #print(engine.max_target_ratio)
         
         with torch.autograd.set_detect_anomaly(True):
-            with autocast():
-                while chunk_index < (np.clip(engine.max_target_ratio,0,1) * max(y_length.tolist())) -1 :      
-                    engine.model.train()
-                    engine.optimizer.zero_grad()
-
+            while chunk_index < (np.clip(engine.max_target_ratio,0,1) * max(y_length.tolist())) -1 :      
+                engine.model.train()
+                engine.optimizer.zero_grad()
+                
+                with autocast():
                     chunk_y = input_y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
                     chunk_y_label = y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
                     
@@ -124,26 +124,26 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     loss = loss + attn_loss
                     attention_loss_list.append(float(attn_loss))
 
-                    if engine.config.gpu_id >=0 or engine.config.multi_gpu:
-                        #print(1)
-                        engine.scaler.scale(loss).backward()
-                        engine.scaler.step(engine.optimizer)
-                        engine.scaler.update()
-                    else:
-                        loss.backward()
-                        engine.optimizer.step()
+                if engine.config.gpu_id >=0 or engine.config.multi_gpu:
+                    #print(1)
+                    engine.scaler.scale(loss).backward()
+                    engine.scaler.step(engine.optimizer)
+                    engine.scaler.update()
+                else:
+                    loss.backward()
+                    engine.optimizer.step()
 
 
-                    loss_list.append(loss.item())
+                loss_list.append(loss.item())
 
-                    '''torch_utils.clip_grad_norm_(
-                        engine.model.parameters(),
-                        engine.config.max_gr_norm,
-                        #norm_type=2,
-                    )'''#gradient clipping          
+                '''torch_utils.clip_grad_norm_(
+                    engine.model.parameters(),
+                    engine.config.max_gr_norm,
+                    #norm_type=2,
+                )'''#gradient clipping          
 
-                    del chunk_y, chunk_y_label, chunk_x, chunk_mask, y_hat, mini_attention,loss
-                        
+                del chunk_y, chunk_y_label, chunk_x, chunk_mask, y_hat, mini_attention,loss
+                    
         p_norm = float(get_parameter_norm(engine.model.parameters())) #모델의 복잡도 학습됨에 따라 커져야함
         g_norm = float(get_grad_norm(engine.model.parameters()))    #클수록 뭔가 배우는게 변하는게 많다 (학습의 안정성)
 
