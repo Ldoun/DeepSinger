@@ -107,7 +107,7 @@ def define_argparser(is_continue=False):
         '--max_ratio',
         required=is_continue,
         type=float,
-        default=0,
+        default=0.1,
         help='Set initial max_ratio, for greedy training Default=%(default)s'
     )
 
@@ -128,7 +128,7 @@ def define_argparser(is_continue=False):
     p.add_argument(
         '--W',
         type=int,
-        default=55,
+        default=120,
         help='W. Default=%(default)s'
     )
 
