@@ -13,6 +13,10 @@ import pickle
 #mask 적용
 #mel start frame implement
 
+#amp 오늘 안에 해결 안되면 Native torch로 변환
+
+INF = (2 ** 15)  #amp masking 
+
 
 
 class  location_sensitive_attention(nn.Module):
@@ -65,7 +69,7 @@ class  location_sensitive_attention(nn.Module):
         if mask is not None:
             #print('energies',energies.shape)
             #print('mask',mask.shape)
-            energies = energies.masked_fill(mask, -np.inf)
+            energies = energies.masked_fill(mask, -INF)
         # print(energies)
         return energies
 
