@@ -136,7 +136,7 @@ if __name__ == '__main__':
             lyrics = split_lyrics(y[1:-1],tok.seperation_mark)
             print(tok.seperation_mark)
 
-            while chunk_index < max(y_length.tolist()):  
+            while chunk_index < max(y_length.tolist()) -1:  
                 model.eval()
 
                 with autocast():
