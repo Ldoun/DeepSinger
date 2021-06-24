@@ -15,12 +15,12 @@ import pickle
 
 #amp 오늘 안에 해결 안되면 Native torch로 변환
 
-INF = (2 ** 15)  #amp masking 
+
 
 
 
 class  location_sensitive_attention(nn.Module):
-    def __init__(self,encoder_hidden_size,decoder_hidden_size,attention_dim,location_feature_dim,attention_kernel_size):
+    def __init__(self,encoder_hidden_size,decoder_hidden_size,attention_dim,location_feature_dim,attention_kernel_size,use_autocast):
         super().__init__()
         self.F = nn.Conv1d(in_channels=1, out_channels=location_feature_dim,
                             kernel_size=attention_kernel_size, stride=1, padding=int((attention_kernel_size - 1) / 2),
@@ -30,6 +30,10 @@ class  location_sensitive_attention(nn.Module):
         self.V = nn.Linear(encoder_hidden_size, attention_dim, bias=False)
         self.U = nn.Linear(location_feature_dim, attention_dim, bias=False)
         self.v = nn.Linear(attention_dim, 1, bias=False)
+        if use_autocast:
+            self.INF = (2 ** 15)  #amp masking 
+        else:
+            self.INF = np.inf
         self.reset()
     
     def reset(self):
@@ -69,7 +73,8 @@ class  location_sensitive_attention(nn.Module):
         if mask is not None:
             #print('energies',energies.shape)
             #print('mask',mask.shape)
-            energies = energies.masked_fill(mask, -INF)
+            energies = energies.masked_fill(mask, -self.INF)
+
         # print(energies)
         return energies
 
@@ -282,7 +287,7 @@ class alignment_model(nn.Module):
         attention_dim=256,
         location_feature_dim = 128,
         drop_p=0.1,
-        
+        use_autocast = True
     ):
         super().__init__()
 
@@ -295,8 +300,9 @@ class alignment_model(nn.Module):
                             decoder_hidden_size=de_hidden_size,
                             attention_dim = attention_dim,
                             location_feature_dim = location_feature_dim,
-                            attention_kernel_size = 31
-        )
+                            attention_kernel_size = 31,
+                            use_autocast = use_autocast
+        ) 
         self.p_embedding = nn.Embedding(num_embeddings=vocab_size,embedding_dim=emb_hs)
         self.concat = nn.Linear(en_hidden_size + de_hidden_size,1024)
         self.generator = Generator(input_size=1024,output_size=vocab_size)

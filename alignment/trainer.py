@@ -76,7 +76,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 engine.model.train()
                 engine.optimizer.zero_grad()
                 
-                with autocast():
+                with autocast(engine.config.use_autocast):
                     chunk_y = input_y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
                     chunk_y_label = y[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
                     
@@ -124,7 +124,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     loss = loss + attn_loss
                     attention_loss_list.append(float(attn_loss))
 
-                if engine.config.gpu_id >=0 or engine.config.multi_gpu:
+                if (engine.config.gpu_id >=0 or engine.config.multi_gpu) and engine.config.use_autocast:
                     #print(1)
                     engine.scaler.scale(loss).backward()
                     engine.scaler.step(engine.optimizer)
@@ -184,7 +184,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
             start_index = np.zeros((x.size(0),), dtype=int)
             attention_index = 0
             input_y = mini_batch_tgt[0][:,:-1]
-            with autocast():
+            with autocast(engine.config.use_autocast):
                 engine.model.eval()
                 y = y.to(device)
                 x = x.to(device)

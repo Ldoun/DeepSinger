@@ -226,6 +226,12 @@ def define_argparser(is_continue=False):
         help='for better background logging',
     )
 
+    p.add_argument(
+        '--use_autocast',
+        action='store_true',
+        help='Turn-off Automatic Mixed Precision (AMP), which speed-up training.',
+    )
+
     config = p.parse_args()
 
     return config
@@ -239,7 +245,8 @@ def get_model(input_size, output_size, config):
             config.de_hs,
             config.attention_dim,
             config.location_feature_dim,
-            config.dropout 
+            config.dropout,
+            config.use_autocast
         )
 
     return model
