@@ -79,9 +79,6 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 with autocast(engine.config.use_autocast):
                     chunk_y = input_y[:,chunk_index:chunk_index + engine.config.tbtt_step].view(input_y.size(0),-1).to(device)
                     chunk_y_label = y[:,chunk_index:chunk_index + engine.config.tbtt_step].view(input_y.size(0),-1).to(device)
-
-                    
-                    print('chunk_y',chunk_y.shape)
                     
                     start_index = start_index + attention_index
                     

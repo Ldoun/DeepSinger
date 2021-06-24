@@ -94,7 +94,7 @@ class  location_sensitive_attention(nn.Module):
         # print('weights', attention_weights)
         #print('energies',energies.shape)
         #print("values",values.shape)
-        print("attention_weights",attention_weights)
+        #print("attention_weights",attention_weights)
         attention_context = torch.bmm(attention_weights.unsqueeze(1), values) #[N, 1, Ti] bmm [N, Ti, He] -> [N, 1, He]
         #attention_context = attention_context.squeeze(1) # [N, Ti]
         # print('context', attention_context.size())
