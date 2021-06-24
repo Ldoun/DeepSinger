@@ -233,7 +233,7 @@ def define_argparser(is_continue=False):
     )
 
     p.add_argument(
-        'init_scale',
+        '--init_scale',
         type = float,
         default=2.**16,
         help = 'init scale of grad scaler'  #https://github.com/pytorch/pytorch/issues/40497
