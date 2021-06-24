@@ -41,7 +41,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
 
         self.best_loss =np.inf
         self.best_model = None
-        self.scaler = GradScaler()
+        self.scaler = GradScaler(init_scale = config.init_scale)
 
     @staticmethod
     def train(engine, mini_batch):

@@ -232,6 +232,13 @@ def define_argparser(is_continue=False):
         help='Turn-off Automatic Mixed Precision (AMP), which speed-up training.',
     )
 
+    p.add_argument(
+        'init_scale',
+        type = float,
+        default=2.**16,
+        help = 'init scale of grad scaler'  #https://github.com/pytorch/pytorch/issues/40497
+    )
+
     config = p.parse_args()
 
     return config
