@@ -136,7 +136,7 @@ if __name__ == '__main__':
             x_length = x.size(2)
             y_length = len(y)
 
-            lyrics = split_lyrics(y[1:-1],tok.seperation_mark)
+            lyrics = split_lyrics(y[1:-1],tok.seperation_mark[0])
             print('seperation_mark',tok.seperation_mark)
             print('y_length',y_length)
 
