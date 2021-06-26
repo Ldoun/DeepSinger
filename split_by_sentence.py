@@ -146,7 +146,7 @@ if __name__ == '__main__':
             attention_index = 0
             encoder_hidden = None
             
-            while chunk_index < y_length:  
+            while chunk_index < y_length -1:  
                 model.eval()
 
                 with autocast():
@@ -179,8 +179,7 @@ if __name__ == '__main__':
                             cnt += 1 
                             
             if chunk_y_label[-1] != '%':
-                write(os.path.join(config.music_dir,input_data[1]['video_name'] + '_'+ str(cnt) +'.wav'),sr,mel_to_audio(x[:,:,last_index:seperation_frame],sr=22050,n_fft=1024,hop_length=256))
-                last_index = seperation_frame
+                write(os.path.join(config.music_dir,input_data[1]['video_name'] + '_'+ str(cnt) +'.wav'),sr,mel_to_audio(x[:,:,last_index:],sr=22050,n_fft=1024,hop_length=256))
                 new_video_name.append(input_data[1]['video_name'] + '_'+ str(cnt) +'.wav')
                 new_lyrics.append(lyrics[cnt])
                 cnt += 1 
