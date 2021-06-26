@@ -178,7 +178,7 @@ if __name__ == '__main__':
                             cnt += 1 
                             
             if chunk_y_label[-1] != '%':
-                write(os.path.join(config.music_dir,data['video_name'] + '_'+ str(cnt) +'.wav'),sr,x[:,:,last_index:])
+                write(os.path.join(config.music_dir,data['video_name'] , '_'+ str(cnt) +'.wav'),sr,x[:,:,last_index:])
                 last_index = seperation_frame
                 new_video_name.append(data['video_name'] + '_'+ str(cnt) +'.wav')
                 new_lyrics.append(lyrics[cnt])
