@@ -39,6 +39,12 @@ def define_argparser():
     )
 
     p.add_argument(
+        '--new_music_dir',
+        required=True,
+        help='music directory where new music file will be save'
+    )
+
+    p.add_argument(
         '--data_fn',
         required=True,
         help='tsv data for inference'
