@@ -127,8 +127,8 @@ if __name__ == '__main__':
     with torch.no_grad():
         device = next(model.parameters()).device
         for input_data in data.iterrows():
-            x = load_audio(os.path.join(config.music_dir,input_data[1]['video_name'])).unsqueeze(0)
-            y = np.array(tok.get_idx(input_data[1]['lyrics']))
+            x = load_audio(os.path.join(config.music_dir,input_data[1][1]['video_name'])).unsqueeze(0)
+            y = np.array(tok.get_idx(input_data[1][1]['lyrics']))
 
             input_y = torch.IntTensor(y)[:-1].unsqueeze(0)
             x_length = x.size(2)
@@ -171,16 +171,16 @@ if __name__ == '__main__':
                         for seperation_index in np.where(np.array(chunk_y_label) == '%')[0]:
                             seperation_frame = torch.argmax(mini_attention[:,seperation_index,:],dim = 1).item()
 
-                            write(os.path.join(config.music_dir,input_data['video_name'] + '_'+ str(cnt) +'.wav'),sr,x[:,:,last_index:seperation_frame])
+                            write(os.path.join(config.music_dir,input_data[1]['video_name'] + '_'+ str(cnt) +'.wav'),sr,x[:,:,last_index:seperation_frame])
                             last_index = seperation_frame
-                            new_video_name.append(input_data['video_name'] + '_'+ str(cnt) +'.wav')
+                            new_video_name.append(input_data[1]['video_name'] + '_'+ str(cnt) +'.wav')
                             new_lyrics.append(lyrics[cnt])
                             cnt += 1 
                             
             if chunk_y_label[-1] != '%':
-                write(os.path.join(config.music_dir,input_data['video_name'] + '_'+ str(cnt) +'.wav'),sr,x[:,:,last_index:])
+                write(os.path.join(config.music_dir,input_data[1]['video_name'] + '_'+ str(cnt) +'.wav'),sr,x[:,:,last_index:])
                 last_index = seperation_frame
-                new_video_name.append(input_data['video_name'] + '_'+ str(cnt) +'.wav')
+                new_video_name.append(input_data[1]['video_name'] + '_'+ str(cnt) +'.wav')
                 new_lyrics.append(lyrics[cnt])
                 cnt += 1 
                             
