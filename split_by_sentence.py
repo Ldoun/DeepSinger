@@ -127,8 +127,8 @@ if __name__ == '__main__':
     with torch.no_grad():
         device = next(model.parameters()).device
         for input_data in data.iterrows():
-            x = load_audio(os.path.join(config.music_dir,input_data['video_name']))
-            y = tok.get_idx(input_data['lyrics'])
+            x = load_audio(os.path.join(config.music_dir,input_data[1]['video_name']))
+            y = tok.get_idx(input_data[1]['lyrics'])
             
             input_y = torch.IntTensor(y)[:,:-1]
             x_length = x.size(2)
