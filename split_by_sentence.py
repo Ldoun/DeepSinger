@@ -171,16 +171,16 @@ if __name__ == '__main__':
                         for seperation_index in np.where(np.array(chunk_y_label) == '%')[0]:
                             seperation_frame = torch.argmax(mini_attention[:,seperation_index,:],dim = 1).item()
 
-                            write(os.path.join(config.music_dir,data['video_name'] + '_'+ str(cnt) +'.wav'),sr,x[:,:,last_index:seperation_frame])
+                            write(os.path.join(config.music_dir,input_data['video_name'] + '_'+ str(cnt) +'.wav'),sr,x[:,:,last_index:seperation_frame])
                             last_index = seperation_frame
-                            new_video_name.append(data['video_name'] + '_'+ str(cnt) +'.wav')
+                            new_video_name.append(input_data['video_name'] + '_'+ str(cnt) +'.wav')
                             new_lyrics.append(lyrics[cnt])
                             cnt += 1 
                             
             if chunk_y_label[-1] != '%':
-                write(os.path.join(config.music_dir,data['video_name'] , '_'+ str(cnt) +'.wav'),sr,x[:,:,last_index:])
+                write(os.path.join(config.music_dir,input_data['video_name'] , '_'+ str(cnt) +'.wav'),sr,x[:,:,last_index:])
                 last_index = seperation_frame
-                new_video_name.append(data['video_name'] + '_'+ str(cnt) +'.wav')
+                new_video_name.append(input_data['video_name'] + '_'+ str(cnt) +'.wav')
                 new_lyrics.append(lyrics[cnt])
                 cnt += 1 
                             
