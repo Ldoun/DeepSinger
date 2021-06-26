@@ -13,8 +13,9 @@ from alignment.dataloader import LJSpeechDataset,RandomBucketBatchSampler,TextAu
 from alignment.Tokenizer import tokenizer
 from alignment.model.lyrics_alignment import alignment_model
 
+from scipy.io.wavfile import write
 from torchaudio import save
-
+from librosa.feature.inverse import mel_to_audio
 
 
 def define_argparser():
@@ -171,14 +172,14 @@ if __name__ == '__main__':
                         for seperation_index in np.where(np.array(chunk_y_label) == '%')[0]:
                             seperation_frame = torch.argmax(mini_attention[:,seperation_index,:],dim = 1).item()
 
-                            save(os.path.join(config.music_dir,input_data[1]['video_name'] + '_'+ str(cnt) +'.wav'),x[:,:,last_index:seperation_frame],sr)
+                            write(os.path.join(config.music_dir,input_data[1]['video_name'] + '_'+ str(cnt) +'.wav'),sr,mel_to_audio(x[:,:,last_index:seperation_frame],sr=22050,n_fft=1024,hop_length=256))
                             last_index = seperation_frame
                             new_video_name.append(input_data[1]['video_name'] + '_'+ str(cnt) +'.wav')
                             new_lyrics.append(lyrics[cnt])
                             cnt += 1 
                             
             if chunk_y_label[-1] != '%':
-                save(os.path.join(config.music_dir,input_data[1]['video_name'] + '_'+ str(cnt) +'.wav'),x[:,:,last_index:],sr)
+                write(os.path.join(config.music_dir,input_data[1]['video_name'] + '_'+ str(cnt) +'.wav'),sr,mel_to_audio(x[:,:,last_index:seperation_frame],sr=22050,n_fft=1024,hop_length=256))
                 last_index = seperation_frame
                 new_video_name.append(input_data[1]['video_name'] + '_'+ str(cnt) +'.wav')
                 new_lyrics.append(lyrics[cnt])
