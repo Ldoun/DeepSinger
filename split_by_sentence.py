@@ -145,7 +145,7 @@ if __name__ == '__main__':
             attention_index = 0
 
             
-            while chunk_index < max(y_length.tolist()) -1:  
+            while chunk_index < y_length -1:  
                 model.eval()
 
                 with autocast():
