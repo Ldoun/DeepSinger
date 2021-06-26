@@ -172,14 +172,14 @@ if __name__ == '__main__':
                         for seperation_index in np.where(np.array(chunk_y_label) == '%')[0]:
                             seperation_frame = torch.argmax(mini_attention[:,seperation_index,:],dim = 1).item()
 
-                            write(os.path.join(config.music_dir,input_data[1]['video_name'] + '_'+ str(cnt) +'.wav'),sr,mel_to_audio(np.array(x[:,:,last_index:seperation_frame].tolist()),sr=22050,n_fft=1024,hop_length=256))
+                            write(os.path.join(config.music_dir,input_data[1]['video_name'] + '_'+ str(cnt) +'.wav'),sr,mel_to_audio(np.array(x[:,:,last_index:seperation_frame].unsqueeze(0).tolist()),sr=22050,n_fft=1024,hop_length=256))
                             last_index = seperation_frame
                             new_video_name.append(input_data[1]['video_name'] + '_'+ str(cnt) +'.wav')
                             new_lyrics.append(lyrics[cnt])
                             cnt += 1 
                             
             if chunk_y_label[-1] != '%':
-                write(os.path.join(config.music_dir,input_data[1]['video_name'] + '_'+ str(cnt) +'.wav'),sr,mel_to_audio(np.array(x[:,:,last_index:].tolist()),sr=22050,n_fft=1024,hop_length=256))
+                write(os.path.join(config.music_dir,input_data[1]['video_name'] + '_'+ str(cnt) +'.wav'),sr,mel_to_audio(np.array(x[:,:,last_index:].unsqueeze(0).tolist()),sr=22050,n_fft=1024,hop_length=256))
                 new_video_name.append(input_data[1]['video_name'] + '_'+ str(cnt) +'.wav')
                 new_lyrics.append(lyrics[cnt])
                 cnt += 1 
