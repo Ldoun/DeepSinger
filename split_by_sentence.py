@@ -119,10 +119,7 @@ if __name__ == '__main__':
     if config.gpu_id >= 0:
         model.cuda(config.gpu_id)
 
-
-    chunk_index = 0
-    start_index = np.zeros((x.size(0),), dtype=int)
-    attention_index = 0
+    sr = 22050
 
     new_video_name = []
     new_lyrics = []
@@ -130,9 +127,7 @@ if __name__ == '__main__':
     with torch.no_grad():
         device = next(model.parameters()).device
         for input_data in data.iterrows():
-            cnt = 0
-            last_index = 0
-            x = load_audio(input_data['video_name'])
+            x = load_audio(os.path.join(config.music_dir,input_data['video_name']))
             y = tok.get_idx(input_data['lyrics'])
             
             input_y = torch.IntTensor(y)[:,:-1]
@@ -141,6 +136,12 @@ if __name__ == '__main__':
 
             lyrics = split_lyrics(y[1:-1],tok.seperation_mark)
             print(tok.seperation_mark)
+
+            cnt = 0
+            last_index = 0
+            chunk_index = 0
+            start_index = np.zeros((x.size(0),), dtype=int)
+            attention_index = 0
 
             while chunk_index < max(y_length.tolist()) -1:  
                 model.eval()
@@ -170,19 +171,22 @@ if __name__ == '__main__':
 
                             write(os.path.join(config.music_dir,data['video_name'] + '_'+ str(cnt) +'.wav'),sr,x[:,:,last_index:seperation_frame])
                             last_index = seperation_frame
-                            new_video_name.append(os.path.join(config.music_dir,data['video_name'] + '_'+ str(cnt) +'.wav'))
-                            new_lyrics = lyrics[cnt]
+                            new_video_name.append(data['video_name'] + '_'+ str(cnt) +'.wav')
+                            new_lyrics.append(lyrics[cnt])
                             cnt += 1 
                             
             if chunk_y_label[-1] != '%':
                 write(os.path.join(config.music_dir,data['video_name'] + '_'+ str(cnt) +'.wav'),sr,x[:,:,last_index:])
                 last_index = seperation_frame
-                new_video_name.append(os.path.join(config.music_dir,data['video_name'] + '_'+ str(cnt) +'.wav'))
-                new_lyrics = lyrics[cnt]
+                new_video_name.append(data['video_name'] + '_'+ str(cnt) +'.wav')
+                new_lyrics.append(lyrics[cnt])
                 cnt += 1 
                             
 
 
-
+    result = pd.DataFrame()
+    result['lyric'] = pd.Series(new_lyrics)
+    result['video_name'] = pd.Series(new_video_name)
+    result.to_csv('result.csv',index=False,sep='\t')
 
             
