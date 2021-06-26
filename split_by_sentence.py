@@ -132,7 +132,7 @@ if __name__ == '__main__':
 
             input_y = torch.IntTensor(y)[:-1].unsqueeze(0)
             x_length = x.size(2)
-            y_length = y.size(0)
+            y_length = len(y)
 
             lyrics = split_lyrics(y[1:-1],tok.seperation_mark)
             print('seperation_mark',tok.seperation_mark)
