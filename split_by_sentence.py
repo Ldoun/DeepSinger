@@ -128,7 +128,7 @@ if __name__ == '__main__':
         device = next(model.parameters()).device
         for input_data in data.iterrows():
             x = load_audio(os.path.join(config.music_dir,input_data[1]['video_name'])).unsqueeze(0)
-            y = tok.get_idx(input_data[1]['lyrics'])
+            y = np.array(tok.get_idx(input_data[1]['lyrics']))
 
             input_y = torch.IntTensor(y)[:-1].unsqueeze(0)
             x_length = x.size(2)
@@ -150,7 +150,7 @@ if __name__ == '__main__':
 
                 with autocast():
                     chunk_y = input_y[:,chunk_index:chunk_index + train_config.tbtt_step].to(device)
-                    chunk_y_label = y[:,chunk_index:chunk_index + train_config.tbtt_step].to(device)
+                    chunk_y_label = y[chunk_index:chunk_index + train_config.tbtt_step].to(device)
                     
                     start_index = start_index + attention_index
                     
