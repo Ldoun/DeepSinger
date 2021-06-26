@@ -150,7 +150,7 @@ if __name__ == '__main__':
 
                 with autocast():
                     chunk_y = input_y[:,chunk_index:chunk_index + train_config.tbtt_step].to(device)
-                    chunk_y_label = y[chunk_index:chunk_index + train_config.tbtt_step].to(device)
+                    chunk_y_label = y[chunk_index:chunk_index + train_config.tbtt_step]
                     
                     start_index = start_index + attention_index
                     
