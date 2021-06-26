@@ -143,7 +143,7 @@ if __name__ == '__main__':
             chunk_index = 0
             start_index = np.zeros((x.size(0),), dtype=int)
             attention_index = 0
-
+            encoder_hidden = None
             
             while chunk_index < y_length -1:  
                 model.eval()
