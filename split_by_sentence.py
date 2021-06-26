@@ -91,6 +91,8 @@ def load_audio(file_f):
 
 def split_lyrics(lyric,seperation_mark):
     lyrics = np.array(lyric)
+    print(lyric)
+    print(seperation_mark)
     seperation_frame = np.where(lyric,seperation_mark)
     splited_lyric = []
     for i in range(len(seperation_frame) -1):
