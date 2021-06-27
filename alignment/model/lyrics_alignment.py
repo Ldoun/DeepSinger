@@ -30,10 +30,6 @@ class  location_sensitive_attention(nn.Module):
         self.V = nn.Linear(encoder_hidden_size, attention_dim, bias=False)
         self.U = nn.Linear(location_feature_dim, attention_dim, bias=False)
         self.v = nn.Linear(attention_dim, 1, bias=False)
-        if use_autocast:
-            self.INF = (2 ** 15)  #amp masking 
-        else:
-            self.INF = np.inf
         self.reset()
     
     def reset(self):
@@ -73,7 +69,7 @@ class  location_sensitive_attention(nn.Module):
         if mask is not None:
             #print('energies',energies.shape)
             #print('mask',mask.shape)
-            energies = energies.masked_fill(mask, -self.INF)
+            energies = energies.masked_fill(mask, -np.inf)
 
         # print(energies)
         return energies
