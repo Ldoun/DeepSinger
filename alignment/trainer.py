@@ -197,7 +197,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 )
 
                 total_acc += (y_hat.argmax(-1).view(-1) == y.view(-1)).sum().item()
-                total_count += y.size(1)
+                total_count += y.size(0) * y.size(1)
 
                 soft_mask = guided_attentions(mini_attention.shape,engine.config.W)
                 soft_mask = torch.from_numpy(soft_mask).to(device)
