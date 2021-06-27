@@ -110,7 +110,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     )
 
                     total_acc += (y_hat.argmax(-1).view(-1) == chunk_y_label.view(-1)).sum().item()
-                    total_count += chunk_y_label.size(1)
+                    total_count += chunk_y_label.size(0) * chunk_y_label.size(1)
 
 
                     '''print(chunk_y_label[:,-1])
