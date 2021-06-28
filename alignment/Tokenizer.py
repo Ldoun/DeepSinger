@@ -48,7 +48,7 @@ class pho_tokenizer(object):
 
     def get_idx(self,line):
         idx = [self.vocab.get(char, self.unk) for char in line]
-        return [self.bos] + [self.eos]
+        return [self.bos] + idx + [self.eos]
 
     def get_word(self,idx):
         return "".join(self._id_to_symbol.get(i, '<unk>') for i in idx)
