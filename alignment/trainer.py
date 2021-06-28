@@ -42,6 +42,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         self.best_loss =np.inf
         self.best_model = None
         self.scaler = GradScaler(init_scale = config.init_scale)
+        self.mini_attention = None
 
     @staticmethod
     def train(engine, mini_batch):
@@ -208,7 +209,9 @@ class MaximumLikelihoodEstimationEngine(Engine):
         word_count = int(mini_batch_tgt[1].sum())
         loss = float(loss)
         attention_loss = float(attn_loss)
-        ppl = np.exp(loss)   
+        ppl = np.exp(loss)  
+
+        engine.mini_attention = mini_attention[0].cpu().numpy()
     
         return {
             'loss': loss,
@@ -322,6 +325,27 @@ class MaximumLikelihoodEstimationEngine(Engine):
             engine.best_model = deepcopy(engine.model.state_dict())
 
     @staticmethod
+    def log_attention_map(engine,writer):
+        from matplotlib import pyplot as plt
+
+        fig, ax = plt.subplots()
+        im = ax.imshow( 
+            engine.mini_attention,
+            aspect='auto',
+            origin='lower',
+            interpolation='none')
+        fig.colorbar(im, ax=ax)
+        xlabel = 'Decoder timestep'
+
+        plt.xlabel(xlabel)
+        plt.ylabel('Encoder timestep')
+        plt.tight_layout()
+
+        writer.add_figure(str(engine.state.epoch)+'epoch', fig)
+
+        
+
+    @staticmethod
     def save_model(engine, train_engine, config):
         avg_train_loss = train_engine.state.metrics['loss']
         avg_valid_loss = engine.state.metrics['loss']
@@ -425,6 +449,12 @@ class SingleTrainer():
             Events.EPOCH_COMPLETED, #event
             self.target_engine_class.save_model, # func
             self.train_engine, self.config
+        )
+
+        self.valid_engine.add_event_handler(
+            Events.EPOCH_COMPLETED, #event
+            self.target_engine_class.log_attention_map, # func
+            self.valid_engine,self.tb_logger.writer
         )
 
         self.train_engine.run(
