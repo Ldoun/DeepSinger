@@ -211,8 +211,10 @@ class MaximumLikelihoodEstimationEngine(Engine):
         attention_loss = float(attn_loss)
         ppl = np.exp(loss)  
 
-        engine.mini_attention = mini_attention[0].cpu().numpy()
-    
+        engine.mini_attention = mini_attention[0,:y_length[0]].cpu().numpy()
+        print('y_length',y_length)
+        print('miniattention',mini_attention.shape)
+        
         return {
             'loss': loss,
             'acc' : total_acc/total_count,
@@ -335,9 +337,8 @@ class MaximumLikelihoodEstimationEngine(Engine):
             origin='lower',
             interpolation='none')
         fig.colorbar(im, ax=ax)
-        xlabel = 'Decoder timestep'
-
-        plt.xlabel(xlabel)
+        
+        plt.xlabel('Decoder timestep')
         plt.ylabel('Encoder timestep')
         plt.tight_layout()
 
