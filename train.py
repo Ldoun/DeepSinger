@@ -11,7 +11,7 @@ import pandas as pd
 
 from alignment.trainer import SingleTrainer,MaximumLikelihoodEstimationEngine
 from alignment.dataloader import LJSpeechDataset,RandomBucketBatchSampler,TextAudioCollate
-from alignment.Tokenizer import tokenizer
+from alignment.Tokenizer import tokenizer,pho_tokenizer
 
 from alignment.model.lyrics_alignment import alignment_model
 
@@ -37,11 +37,11 @@ def define_argparser(is_continue=False):
         required=not is_continue ,
         help='music folder path'
     )
-
+    
     p.add_argument(
         '--bpe_model',
-        required=not is_continue,
-        help='bpe_model file name'
+        help='bpe_model file name',
+        default=None
     )
 
     p.add_argument(
@@ -321,8 +321,11 @@ def main(config, model_weight=None, opt_weight=None, scaler_weight = None):
         pp = pprint.PrettyPrinter(indent=4)
         pp.pprint(vars(config))
     print_config(config)
-
-    tok = tokenizer(config.bpe_model)
+    
+    if config.bpe_model is not None:
+        tok = tokenizer(config.bpe_model)
+    else:
+        tok = pho_tokenizer()
 
     train_data = pd.read_csv(f'{config.train_f}', sep='\t',
                                     usecols=['video_name', 'lyrics'],
