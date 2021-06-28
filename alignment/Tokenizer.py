@@ -27,7 +27,7 @@ class tokenizer(object):
 class pho_tokenizer(object):
     def __init__(self):
         super().__init__()
-        self.pho = '%rʲoɯʊɕsɐemtkʑɡɹqʒɪðhdfɔɛːzjiabpuŋvɑɫɾʃ̩wɜθʌəlɒn '
+        pho = '%rʲoɯʊɕsɐemtkʑɡɹqʒɪðhdfɔɛːzjiabpuŋvɑɫɾʃ̩wɜθʌəlɒn '
         
         self._symbol_to_id = {s: i+3 for i, s in enumerate(pho)}
         self._id_to_symbol = {i+3: s for i, s in enumerate(pho)}
