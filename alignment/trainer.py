@@ -212,9 +212,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         ppl = np.exp(loss)  
 
         engine.mini_attention = mini_attention[0,:,:x_length[0]].cpu().numpy()
-        print('y_length',x_length)
-        print('miniattention',mini_attention.shape)
-
+        
         return {
             'loss': loss,
             'acc' : total_acc/total_count,
