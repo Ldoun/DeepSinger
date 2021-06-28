@@ -62,7 +62,7 @@ def define_argparser(is_continue=False):
         default=-1,
         help='GPU ID to train. Currently, GPU parallel is not supported. -1 for CPU. Default=%(default)s'
     )
-    
+
     p.add_argument(
         '--batch_size',
         type=int,
@@ -171,7 +171,7 @@ def define_argparser(is_continue=False):
     p.add_argument(
         '--lr_step',
         type=int,
-        default=1,
+        default=0,
         help='Number of epochs for each learning rate decay. Default=%(default)s',
     )
 
