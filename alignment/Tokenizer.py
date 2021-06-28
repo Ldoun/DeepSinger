@@ -29,25 +29,25 @@ class pho_tokenizer(object):
         super().__init__()
         pho = '%rʲoɯʊɕsɐemtkʑɡɹqʒɪðhdfɔɛːzjiabpuŋvɑɫɾʃ̩wɜθʌəlɒn '
         
-        self._symbol_to_id = {s: i+3 for i, s in enumerate(pho)}
+        self.vocab = {s: i+3 for i, s in enumerate(pho)}
         self._id_to_symbol = {i+3: s for i, s in enumerate(pho)}
 
         self.pad = 0
         self.bos = 1
         self.eos = 2
 
-        self._symbol_to_id['<pad>'] = self.pad
-        self._symbol_to_id['<bos>'] = self.bos
-        self._symbol_to_id['<eos>'] = self.eos
+        self.vocab['<pad>'] = self.pad
+        self.vocab['<bos>'] = self.bos
+        self.vocab['<eos>'] = self.eos
 
-        self._symbol_to_id[self.pad] = '<pad>'
-        self._symbol_to_id[self.bos] = '<bos>'
-        self._symbol_to_id[self.eos] = '<eos>'
+        self._id_to_symbol[self.pad] = '<pad>'
+        self._id_to_symbol[self.bos] = '<bos>'
+        self._id_to_symbol[self.eos] = '<eos>'
 
-        self.unk = len(self._symbol_to_id)
+        self.unk = len(self.vocab)
 
     def get_idx(self,line):
-        idx = [self._symbol_to_id.get(char, self.unk) for char in line]
+        idx = [self.vocab.get(char, self.unk) for char in line]
         return [self.bos] + [self.eos]
 
     def get_word(self,idx):
