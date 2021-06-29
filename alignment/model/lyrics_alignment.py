@@ -358,15 +358,15 @@ class alignment_model(nn.Module):
         
         if de_hidden is None:
             decoder_hidden = (
-                h_src.new(2,h_src.size(0),self.decoder_hs).zero_(),
-                h_src.new(2,h_src.size(0),self.decoder_hs).zero_(),
+                h_src.new_zeros(2,h_src.size(0),self.decoder_hs),
+                h_src.new_zeros(2,h_src.size(0),self.decoder_hs)
             )
 
         else:
             decoder_hidden = de_hidden
         
-        self.attention_context_vector = emb_tgt.new(batch_size,1,self.encoder_hs).zero_()
-        self.cumulative_attention_weights = h_src.new(h_src.size(0),mel_length).zero_()
+        attention_context_vector = emb_tgt.new_zeros(batch_size,1,self.encoder_hs)
+        cumulative_attention_weights = h_src.new_zeros(h_src.size(0),mel_length)
 
         for t in range(ipa.size(1)):
             if t == 0:
@@ -377,18 +377,18 @@ class alignment_model(nn.Module):
             #print("emn_t:",emb_t.shape)
             #print("h_src:",h_src.shape)
             #emb_t = emb_t.unsqueeze(1)
-            cumulative_attention = self.cumulative_attention_weights.unsqueeze(1)
+            cumulative_attention = cumulative_attention_weights.unsqueeze(1)
             #|emb_t| = (batch_size,1,word_vec_size)
             #|h_t_tilde| = (batch_size,1,hidden_size)
             #|attention_context_vector| = (batch_size,1,encoder_hidden_size)
 
-            decoder_output,decoder_hidden = self.decoder(emb_t,self.attention_context_vector,decoder_hidden)
+            decoder_output,decoder_hidden = self.decoder(emb_t, attention_context_vector,decoder_hidden)
 
             #|decoder_output| = (batch_size,1,hidden_size)
             #|decoder_hidden| = (n_layer,batch_size,hidden_size)
 
-            self.attention_context_vector, self.attention_weights = self.attention(decoder_output,h_src,cumulative_attention,mask)
-            self.cumulative_attention_weights = self.cumulative_attention_weights + self.attention_weights
+            attention_context_vector, attention_weights = self.attention(decoder_output,h_src,cumulative_attention,mask)
+            cumulative_attention_weights = cumulative_attention_weights + attention_weights
             
             #print('decoder_output',decoder_output.shape)
             #print('attention_context_vector',self.attention_context_vector.shape)
@@ -397,10 +397,8 @@ class alignment_model(nn.Module):
             #print('h_t_tilde', h_t_tilde.shape)
             
             h_tilde += [h_t_tilde]
-            if text_mask is not None:
-                attention += [self.attention_weights.masked_fill(text_mask,0.0)]
-            else:
-                attention += [self.attention_weights]
+            
+            attention += [attention_weights]
         
         #print('ipa',ipa.size())
         #print(h_tilde)
@@ -411,6 +409,9 @@ class alignment_model(nn.Module):
         y_hat = self.generator(h_tilde)
         
         #|y_hat| = (batch_size,length,ouput_size)
+
+        if text_mask is not None:
+            attention += [attention.masked_fill(text_mask,0.0)]
 
         '''print('emb_tgt',torch.isnan(emb_tgt).any())
         print('cumulative_attention',torch.isnan(cumulative_attention).any())
