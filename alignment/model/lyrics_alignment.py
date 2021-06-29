@@ -321,9 +321,10 @@ class alignment_model(nn.Module):
     
 
     def forward(self, mel,ipa, en_hidden = None,de_hidden = None):
-        batch_size = ipa.size(0)
-
+        
         mask = None
+        text_mask = None
+        
         if isinstance(mel,tuple):
             x,mask = mel #torch text에서 x_length
             #|mask| = (batch_size,length)
@@ -338,8 +339,10 @@ class alignment_model(nn.Module):
         if isinstance(ipa,tuple):
             ipa = ipa[0]
             text_mask = ipa[1]
-        else:
-            x = ipa[0]
+        
+
+        batch_size = ipa.size(0)
+
     
         h_src, encoder_hidden = self.encoder(x,en_hidden)
         #|h_src| = (batch_size,length,hidden_size)
@@ -394,7 +397,10 @@ class alignment_model(nn.Module):
             #print('h_t_tilde', h_t_tilde.shape)
             
             h_tilde += [h_t_tilde]
-            attention += [self.attention_weights.masked_fill(text_mask,0.0)]
+            if text_mask is not None:
+                attention += [self.attention_weights.masked_fill(text_mask,0.0)]
+            else:
+                attention += [self.attention_weights]
         
         #print('ipa',ipa.size())
         #print(h_tilde)
