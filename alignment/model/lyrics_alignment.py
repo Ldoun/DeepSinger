@@ -26,7 +26,7 @@ class  location_sensitive_attention(nn.Module):
                             kernel_size=attention_kernel_size, stride=1, padding=int((attention_kernel_size - 1) / 2),
                             bias=False)
         
-        self.W = nn.Linear(decoder_hidden_size, attention_dim, bias=True) # keep one bias
+        self.W = nn.Linear(decoder_hidden_size, attention_dim, bias=False) # keep one bias
         self.V = nn.Linear(encoder_hidden_size, attention_dim, bias=False)
         self.U = nn.Linear(location_feature_dim, attention_dim, bias=False)
         self.v = nn.Linear(attention_dim, 1, bias=False)
@@ -53,16 +53,17 @@ class  location_sensitive_attention(nn.Module):
         #query = query.unsqueeze(1) #[N, 1, Hd], insert time-axis for broadcasting
         #print(query.shape)
         Ws = self.W(query) #[N, 1, A]
-        
-        Vh = self.V(values) #[N, Ti, A]
+        if self.Vh is None:
+            self.Vh = self.V(values) #[N, Ti, A]
         #print(cumulative_attention_weights.shape)
+
         location_feature = self.F(cumulative_attention_weights) #[N, 32, Ti]
         # print(location_feature.size())
         Uf = self.U(location_feature.transpose(1, 2)) #[N, Ti, A]
         '''print('W s_i', Ws.size())
         print('V h_j', self.Vh.size())
         print('U f_ij', Uf.size())'''
-        energies = self.v(torch.tanh(Ws + Vh + Uf)).squeeze(-1) #[N, Ti]
+        energies = self.v(torch.tanh(Ws + self.Vh + Uf)).squeeze(-1) #[N, Ti]
         
         # print('mask', mask)
         # print('energies', energies)
@@ -339,7 +340,8 @@ class alignment_model(nn.Module):
             ipa = ipa[0]
             text_mask = ipa[1]
         
-
+        print('ipa',ipa)
+        
         batch_size = ipa.size(0)
 
     
@@ -368,6 +370,8 @@ class alignment_model(nn.Module):
         cumulative_attention_weights = h_src.new_zeros(h_src.size(0),mel_length)
 
         for t in range(ipa.size(1)):
+            if t == 0:
+                self.attention.reset()
                 
             emb_t = emb_tgt[:,t,:].unsqueeze(1)
             #print(t)
