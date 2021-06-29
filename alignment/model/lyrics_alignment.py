@@ -42,7 +42,7 @@ class  location_sensitive_attention(nn.Module):
            where f_i = F * ca_i-1,
                  ca_i-1 = sum_{j=1}^{T-1} a_i-1
         Args:
-            query: [N, Hd], decoder state
+            query: [N, 1, Hd], decoder state
             values: [N, Ti, He], encoder hidden representation
             cumulative_attention_weights: (batch_size, 1, max_time)
         Returns:
@@ -363,6 +363,9 @@ class alignment_model(nn.Module):
         self.cumulative_attention_weights = h_src.new(h_src.size(0),mel_length).zero_()
 
         for t in range(ipa.size(1)):
+            if t == 0:
+                self.attention.reset()
+                
             emb_t = emb_tgt[:,t,:].unsqueeze(1)
             #print(t)
             #print("emn_t:",emb_t.shape)
@@ -397,7 +400,7 @@ class alignment_model(nn.Module):
         #|h_t_tilde| = (batch_size,length,hidden_size)
 
         y_hat = self.generator(h_tilde)
-        self.attention.reset()
+        
         #|y_hat| = (batch_size,length,ouput_size)
 
         '''print('emb_tgt',torch.isnan(emb_tgt).any())
