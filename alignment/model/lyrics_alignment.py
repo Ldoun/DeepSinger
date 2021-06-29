@@ -53,8 +53,8 @@ class  location_sensitive_attention(nn.Module):
         #query = query.unsqueeze(1) #[N, 1, Hd], insert time-axis for broadcasting
         #print(query.shape)
         Ws = self.W(query) #[N, 1, A]
-        if self.Vh is None:
-            self.Vh = self.V(values) #[N, Ti, A]
+        
+        Vh = self.V(values) #[N, Ti, A]
         #print(cumulative_attention_weights.shape)
         location_feature = self.F(cumulative_attention_weights) #[N, 32, Ti]
         # print(location_feature.size())
@@ -62,7 +62,7 @@ class  location_sensitive_attention(nn.Module):
         '''print('W s_i', Ws.size())
         print('V h_j', self.Vh.size())
         print('U f_ij', Uf.size())'''
-        energies = self.v(torch.tanh(Ws + self.Vh + Uf)).squeeze(-1) #[N, Ti]
+        energies = self.v(torch.tanh(Ws + Vh + Uf)).squeeze(-1) #[N, Ti]
         
         # print('mask', mask)
         # print('energies', energies)
@@ -368,8 +368,6 @@ class alignment_model(nn.Module):
         cumulative_attention_weights = h_src.new_zeros(h_src.size(0),mel_length)
 
         for t in range(ipa.size(1)):
-            if t == 0:
-                self.attention.reset()
                 
             emb_t = emb_tgt[:,t,:].unsqueeze(1)
             #print(t)
