@@ -323,7 +323,6 @@ class alignment_model(nn.Module):
     def forward(self, mel,ipa, en_hidden = None,de_hidden = None):
         
         mask = None
-        text_mask = None
         
         if isinstance(mel,tuple):
             x,mask = mel #torch text에서 x_length
@@ -409,9 +408,6 @@ class alignment_model(nn.Module):
         y_hat = self.generator(h_tilde)
         
         #|y_hat| = (batch_size,length,ouput_size)
-
-        if text_mask is not None:
-            attention += [attention.masked_fill(text_mask,0.0)]
 
         '''print('emb_tgt',torch.isnan(emb_tgt).any())
         print('cumulative_attention',torch.isnan(cumulative_attention).any())

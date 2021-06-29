@@ -50,7 +50,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         
         x,mask,x_length = mini_batch[0][0],mini_batch[0][1],mini_batch[0][2] #tensor,mask,length
         mini_batch_tgt = (mini_batch[1][0],mini_batch[1][1])
-        y_length,text_mask = mini_batch_tgt[1],mini_batch[1][2]
+        y_length = mini_batch_tgt[1]
         
         y = mini_batch_tgt[0][:,1:]  #<BOS> 제외 정답문장 1번 단어부터 비교
         #|x| = (batch_size,128,length)
@@ -81,7 +81,6 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     chunk_y = input_y[:,chunk_index:chunk_index + engine.config.tbtt_step].view(input_y.size(0),-1).to(device)
                     chunk_y_label = y[:,chunk_index:chunk_index + engine.config.tbtt_step].view(input_y.size(0),-1).to(device)
                     
-                    chunk_y_mask = text_mask[:,chunk_index:chunk_index + engine.config.tbtt_step].to(device)
                     start_index = start_index + attention_index
                     
                     #print('start_index',start_index)
@@ -93,7 +92,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                         chunk_x = chunk_x.to(device)
                         chunk_mask = chunk_mask.to(device)
 
-                        y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),(chunk_y,chunk_y_mask))# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
+                        y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),(chunk_y))# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
                         
                     else:
                         chunk_x,chunk_mask = apply_attention_make_batch(x,mask,start_index,engine.config.tbtt_step , x_length, y_length)
@@ -101,7 +100,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                         chunk_mask = chunk_mask.to(device)
                         encoder_hidden = detach_hidden(encoder_hidden)
                         decoder_hidden = detach_hidden(decoder_hidden)
-                        y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),(chunk_y,chunk_y_mask),en_hidden = encoder_hidden,de_hidden = decoder_hidden)# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
+                        y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),(chunk_y),en_hidden = encoder_hidden,de_hidden = decoder_hidden)# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
                     
                     attention_index = np.array(torch.argmax(mini_attention[:,-1,:],dim=1).tolist())
                     chunk_index = chunk_index + engine.config.tbtt_step
