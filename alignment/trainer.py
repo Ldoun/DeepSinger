@@ -342,7 +342,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         plt.xlabel('Encoder timestep')
         plt.tight_layout()
 
-        writer.add_figure(str(engine.state.epoch)+'epoch', fig)
+        writer.add_figure(str(engine.state.epoch)+'epoch', fig,engine.state.epoch)
 
         
 
