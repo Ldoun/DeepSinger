@@ -337,6 +337,9 @@ class alignment_model(nn.Module):
 
         if isinstance(ipa,tuple):
             ipa = ipa[0]
+            text_mask = ipa[1]
+        else:
+            x = ipa[0]
     
         h_src, encoder_hidden = self.encoder(x,en_hidden)
         #|h_src| = (batch_size,length,hidden_size)
@@ -391,7 +394,7 @@ class alignment_model(nn.Module):
             #print('h_t_tilde', h_t_tilde.shape)
             
             h_tilde += [h_t_tilde]
-            attention += [self.attention_weights]
+            attention += [self.attention_weights.masked_fill(text_mask,0.0)]
         
         #print('ipa',ipa.size())
         #print(h_tilde)

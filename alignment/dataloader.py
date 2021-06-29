@@ -178,7 +178,7 @@ class TextAudioCollate(object):
         decoder_mask = get_mask_from_lengths(output_lengths)
         #print('encoder_length:',input_lengths)
         #print('decoder_length:',output_lengths)
-        return (mel_padded,decoder_mask,output_lengths) ,(text_padded , input_lengths) 
+        return (mel_padded,decoder_mask,output_lengths) ,(text_padded , input_lengths, encoder_mask) 
 
 
 def get_mask_from_lengths(lengths):
