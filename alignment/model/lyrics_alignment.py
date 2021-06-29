@@ -392,7 +392,7 @@ class alignment_model(nn.Module):
             
             #print('decoder_output',decoder_output.shape)
             #print('attention_context_vector',self.attention_context_vector.shape)
-            h_t_tilde = self.concat(torch.cat([decoder_output,self.attention_context_vector],dim=-1))
+            h_t_tilde = self.concat(torch.cat([decoder_output,attention_context_vector],dim=-1))
             #|h_t_tilde| = (batch_size,1,hidden_size)
             #print('h_t_tilde', h_t_tilde.shape)
             
