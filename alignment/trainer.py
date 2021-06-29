@@ -338,8 +338,8 @@ class MaximumLikelihoodEstimationEngine(Engine):
             interpolation='none')
         fig.colorbar(im, ax=ax)
         
-        plt.xlabel('Decoder timestep')
-        plt.ylabel('Encoder timestep')
+        plt.ylabel('Decoder timestep')
+        plt.xlabel('Encoder timestep')
         plt.tight_layout()
 
         writer.add_figure(str(engine.state.epoch)+'epoch', fig)
