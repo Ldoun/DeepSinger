@@ -30,7 +30,7 @@ class QuotesSpider(scrapy.Spider):
         self.input_list = '../data.tsv'
 
         if os.path.isfile(self.save_result_path):
-            self.song_db = pd.read_csv(self.save_result_path)
+            self.song_db = pd.read_csv(self.save_result_path,sep='\t')
         else:   
             self.song_db = pd.DataFrame(columns = ['titles' , 'artist', 'lyrics'])
         
@@ -83,4 +83,4 @@ class QuotesSpider(scrapy.Spider):
         self.song_db['titles'] = pd.Series(self.title_series)
         self.song_db['artist'] = pd.Series(self.artist_series)
         self.song_db['lyrics'] = pd.Series(self.lyrics_series)
-        self.song_db.to_csv(self.save_result_path)
+        self.song_db.to_csv(self.save_result_path,sep='\t',index=False)
