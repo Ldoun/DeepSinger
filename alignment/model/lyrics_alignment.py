@@ -488,7 +488,7 @@ class alignment_model(nn.Module):
             #|attention_context_vector| = (batch_size,1,encoder_hidden_size)
 
             cell_input = torch.cat((emb_t, attention_context_vector), -1)
-            attention_hidden, attention_cell = attention_rnn(
+            attention_hidden, attention_cell = self.attention_rnn(
                 cell_input, (attention_hidden, attention_cell))
             attention_hidden = self.dropout(attention_hidden)
 
