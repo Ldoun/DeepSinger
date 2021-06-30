@@ -522,7 +522,7 @@ class alignment_model(nn.Module):
         
         #print('ipa',ipa.size())
         #print(h_tilde)
-        h_tilde = torch.cat(h_tilde,dim=1)
+        h_tilde = torch.stack(h_tilde,dim=1)
         attention = torch.stack(attention,dim=1)
         #|h_t_tilde| = (batch_size,length,hidden_size)
 
