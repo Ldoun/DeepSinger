@@ -43,6 +43,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         self.best_model = None
         self.scaler = GradScaler(init_scale = config.init_scale)
         self.mini_attention = None
+        self.cnt = 0
 
     @staticmethod
     def train(engine, mini_batch):
@@ -142,14 +143,16 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 #norm_type=2,
             )'''#gradient clipping          
 
-            del chunk_y, chunk_y_label, chunk_x, chunk_mask, y_hat, mini_attention,loss
+            del chunk_y, chunk_y_label, chunk_x, chunk_mask, y_hat,loss
                 
         p_norm = float(get_parameter_norm(engine.model.parameters())) #모델의 복잡도 학습됨에 따라 커져야함
         g_norm = float(get_grad_norm(engine.model.parameters()))    #클수록 뭔가 배우는게 변하는게 많다 (학습의 안정성)
 
         if engine.lr_scheduler is not None:
             engine.lr_scheduler.step()
-            
+
+        engine.mini_attention = mini_attention[0,:,:x_length[0]].cpu().numpy()
+        self.cnt += 1
         #if engine.config.use_noam_decay and engine.lr_scheduler is not None:
         #    engine.lr_scheduler.step()
         #print('loss_list',loss_list)
@@ -344,6 +347,24 @@ class MaximumLikelihoodEstimationEngine(Engine):
 
         writer.add_figure('attention allignment', fig,train_engine.state.epoch)
 
+    @staticmethod
+    def training_log_attention_map(train_engine,writer):
+        from matplotlib import pyplot as plt
+
+        fig, ax = plt.subplots()
+        im = ax.imshow( 
+            train_engine.mini_attention,
+            aspect='auto',
+            origin='lower',
+            interpolation='none')
+        fig.colorbar(im, ax=ax)
+        
+        plt.ylabel('Decoder timestep')
+        plt.xlabel('Encoder timestep')
+        plt.tight_layout()
+
+        writer.add_figure('attention allignment(train)', fig, train_engine.cnt)
+
         
 
     @staticmethod
@@ -432,6 +453,11 @@ class SingleTrainer():
             Events.EPOCH_COMPLETED, #event
             run_validation, #func
             self.valid_engine, valid_loader #args
+        )
+
+        self.train_engine.add_event_handler(
+            Events.ITERATION_COMPLETED,
+            
         )
         
         self.valid_engine.add_event_handler(
