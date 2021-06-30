@@ -66,7 +66,7 @@ class QuotesSpider(scrapy.Spider):
     def parse(self, response):
         song_id = response.xpath('//*[@id="conts"]/div[*]/div/ul/li[1]/dl/dt/a[1]/@data-song-no').getall()[0]
         #print('song_id: '+str(song_id.get()))
-        url = 'https://www.melon.com/song/detail.htm?songId='+str(song_id.get())
+        url = 'https://www.melon.com/song/detail.htm?songId='+str(song_id)
         yield scrapy.Request(url=url, callback=self.parse_lyrics,meta=response.meta)
 
     def parse_lyrics(self,response):
