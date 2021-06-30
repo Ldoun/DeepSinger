@@ -26,7 +26,7 @@ class QuotesSpider(scrapy.Spider):
             }
         }
 
-        self.save_result_path = '/content/drive/MyDrive/data/svs/melone_result_re.csv'
+        self.save_result_path = '/content/drive/MyDrive/data/svs/melone_result_re.tsv'
         self.input_list = '../data.tsv'
 
         if os.path.isfile(self.save_result_path):
@@ -64,7 +64,7 @@ class QuotesSpider(scrapy.Spider):
             yield scrapy.Request(url=url, callback=self.parse,meta=meta)
 
     def parse(self, response):
-        song_id = response.xpath('//*[@id="conts"]/div[5]/div/ul/li[1]/dl/dt/a[1]/@data-song-no')
+        song_id = response.xpath('//*[@id="conts"]/div[*]/div/ul/li[1]/dl/dt/a[1]/@data-song-no').getall()[0]
         #print('song_id: '+str(song_id.get()))
         url = 'https://www.melon.com/song/detail.htm?songId='+str(song_id.get())
         yield scrapy.Request(url=url, callback=self.parse_lyrics,meta=response.meta)
