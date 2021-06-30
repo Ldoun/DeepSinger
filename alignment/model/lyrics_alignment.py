@@ -465,8 +465,8 @@ class alignment_model(nn.Module):
         attention_hidden = h_src.new_zeros(h_src.size(0), self.attention_rnn_dim)
         attention_cell = h_src.new_zeros(h_src.size(0), self.attention_rnn_dim)
 
-        decoder_hidden = h_src.new_zeros(h_src.size(0), self.de_hidden_size)
-        decoder_cell = h_src.new_zeros(h_src.size(0), self.de_hidden_size)
+        decoder_hidden = h_src.new_zeros(h_src.size(0), self.decoder_hs)
+        decoder_cell = h_src.new_zeros(h_src.size(0), self.decoder_hs)
 
         attention_context_vector = emb_tgt.new_zeros(batch_size,1,self.encoder_hs)
         cumulative_attention_weights = h_src.new_zeros(h_src.size(0),mel_length)
