@@ -151,7 +151,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         if engine.lr_scheduler is not None:
             engine.lr_scheduler.step()
 
-        engine.mini_attention = mini_attention[0,:,:x_length[0]].cpu().numpy()
+        engine.mini_attention = mini_attention[0,:,:x_length[0]].cpu().detach().numpy()
         self.cnt += 1
         #if engine.config.use_noam_decay and engine.lr_scheduler is not None:
         #    engine.lr_scheduler.step()
