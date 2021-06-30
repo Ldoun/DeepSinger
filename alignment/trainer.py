@@ -327,7 +327,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
             engine.best_model = deepcopy(engine.model.state_dict())
 
     @staticmethod
-    def log_attention_map(engine,global_step,writer):
+    def log_attention_map(engine,train_engine,writer):
         from matplotlib import pyplot as plt
 
         fig, ax = plt.subplots()
@@ -342,7 +342,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         plt.xlabel('Encoder timestep')
         plt.tight_layout()
 
-        writer.add_figure(str(global_step)+'epoch', fig,global_step)
+        writer.add_figure(str(train_engine.state.epoch)+'epoch', fig,train_engine.state.epoch)
 
         
 
@@ -455,7 +455,7 @@ class SingleTrainer():
         self.valid_engine.add_event_handler(
             Events.EPOCH_COMPLETED, #event
             self.target_engine_class.log_attention_map, # func
-            self.valid_engine,self.train_engine.state.epoch, self.tb_logger.writer
+            self.valid_engine,self.train_engine, self.tb_logger.writer
         )
 
         self.train_engine.run(

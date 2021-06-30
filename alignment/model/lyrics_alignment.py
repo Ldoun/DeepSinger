@@ -20,7 +20,7 @@ import pickle
 
 
 class  location_sensitive_attention(nn.Module):
-    def __init__(self,encoder_hidden_size,decoder_hidden_size,attention_dim,location_feature_dim,attention_kernel_size,use_autocast):
+    def __init__(self,encoder_hidden_size,decoder_hidden_size,attention_dim,location_feature_dim,attention_kernel_size):
         super().__init__()
         self.F = nn.Conv1d(in_channels=1, out_channels=location_feature_dim,
                             kernel_size=attention_kernel_size, stride=1, padding=int((attention_kernel_size - 1) / 2),
@@ -298,7 +298,6 @@ class alignment_model(nn.Module):
                             attention_dim = attention_dim,
                             location_feature_dim = location_feature_dim,
                             attention_kernel_size = 31,
-                            use_autocast = use_autocast
         ) 
         self.p_embedding = nn.Embedding(num_embeddings=vocab_size,embedding_dim=emb_hs)
         self.concat = nn.Linear(en_hidden_size + de_hidden_size,1024)
@@ -340,8 +339,7 @@ class alignment_model(nn.Module):
             ipa = ipa[0]
             text_mask = ipa[1]
         
-        print('ipa',ipa)
-        
+
         batch_size = ipa.size(0)
 
     
