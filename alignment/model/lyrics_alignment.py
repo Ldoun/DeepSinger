@@ -474,8 +474,8 @@ class alignment_model(nn.Module):
         attention_weights = h_src.new_zeros(h_src.size(0),mel_length)
 
         for t in range(ipa.size(1)):
-            if t == 0:
-                self.attention.reset()
+            #if t == 0:
+            #    self.attention.reset()
                 
             emb_t = emb_tgt[:,t,:].unsqueeze(1)
             #print(t)
