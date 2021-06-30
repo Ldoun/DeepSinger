@@ -148,6 +148,13 @@ def define_argparser(is_continue=False):
     )
 
     p.add_argument(
+        '--attention_rnn_dim',
+        type=int,
+        default=1024,
+        help='attention_rnn_dim'
+    )
+
+    p.add_argument(
         '--attention_dim',
         type=int,
         default=256,
@@ -246,8 +253,8 @@ def get_model(input_size, output_size, config):
             config.de_hs,
             config.attention_dim,
             config.location_feature_dim,
-            config.dropout,
-            config.use_autocast
+            config.attention_rnn_dim,
+            config.dropout
         )
 
     return model
