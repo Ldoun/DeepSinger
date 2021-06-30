@@ -457,7 +457,7 @@ class SingleTrainer():
 
         self.train_engine.add_event_handler(
             Events.ITERATION_COMPLETED,
-            self.training_log_attention_map,
+            self.target_engine_class.training_log_attention_map,
             self.train_engine, self.tb_logger.writer
         )
         
