@@ -71,7 +71,8 @@ class QuotesSpider(scrapy.Spider):
 
     def parse_lyrics(self,response):
         data = response.xpath('//*[@id="d_video_summary"]/text()').getall()
-        lyrics = re.sub('\\r\\n(\\t){1,}','', '%'.join(data))
+        lyric = re.sub('[(\\r\\n(\\t){1,})(\\r{1,})]','', '%'.join(data))
+        lyric = re.sub('%{1,}','%',lyric)
         if len(data) == 1:
             lyrics = re.sub('(\\r\\n){1,}','%',lyrics) 
         
