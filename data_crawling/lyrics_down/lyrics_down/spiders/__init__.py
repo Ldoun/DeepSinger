@@ -66,23 +66,25 @@ class QuotesSpider(scrapy.Spider):
     def parse(self, response):
         song_id = None
         list_id = 'frm_songList'
+
         song_list = response.xpath('//*[@id="frm_songList"]/div/table/tbody/tr[*]/td[3]/div/div/a[2]/@title').getall()
-        if len(song_list) == 0:
-            song_list = response.xpath('//*[@id="frm_searchSong"]/div/table/tbody/tr[*]/td[3]/div/div/a[2]/@title').getall()
-            list_id = 'frm_searchSong'
+        list_id = ['frm_songList'] * len(song_list)
+        temp = response.xpath('//*[@id="frm_searchSong"]/div/table/tbody/tr[*]/td[3]/div/div/a[2]/@title').getall()
+        list_id = list_id + ['frm_searchSong'] * len(temp)
+        song_list = song_list + temp
 
         for i,title in enumerate(song_list):
             if title.replace(' ','') == response.meta['title'].replace(' ',''):
-                song_id = response.xpath('//*[@id="'+list_id+'"]/div/table/tbody/tr/td['+str(i+1)+']/div/input/@value').get()
+                song_id = response.xpath('//*[@id="'+list_id[i]+'"]/div/table/tbody/tr/td['+str(i+1)+']/div/input/@value').get()
                 if song_id == None:
-                    song_id = response.xpath('//*[@id="'+list_id+'"]/div/table/tbody/tr['+str(i+1)+']/td[1]/div/input/@value').get()
+                    song_id = response.xpath('//*[@id="'+list_id[i]+'"]/div/table/tbody/tr['+str(i+1)+']/td[1]/div/input/@value').get()
         
         if song_id == None:
             for i,title in enumerate(song_list):
                 if response.meta['title'].replace(' ','') in title.replace(' ',''):
-                    song_id = response.xpath('//*[@id="'+list_id+'"]/div/table/tbody/tr/td['+str(i+1)+']/div/input/@value').get() 
+                    song_id = response.xpath('//*[@id="'+list_id[i]+'"]/div/table/tbody/tr/td['+str(i+1)+']/div/input/@value').get() 
                     if song_id == None: 
-                        song_id = response.xpath('//*[@id="'+list_id+'"]/div/table/tbody/tr['+str(i+1)+']/td[1]/div/input/@value').get()
+                        song_id = response.xpath('//*[@id="'+list_id[i]+'"]/div/table/tbody/tr['+str(i+1)+']/td[1]/div/input/@value').get()
         
         if song_id == None:
             titles = response.xpath('//*[@id="conts"]/div[*]/div[1]/ul/li[*]/dl/dt/a[2]/text()').getall()
