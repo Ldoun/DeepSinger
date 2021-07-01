@@ -67,6 +67,7 @@ class QuotesSpider(scrapy.Spider):
         song_id = None
         song_list = response.xpath('//*[@id="frm_songList"]/div/table/tbody/tr[*]/td[3]/div/div/a[2]/@title').getall()
         for i,title in enumerate(song_list):
+            print(response.meta['title'])
             if title == response.meta['title']:
                 song_id = response.xpath('//*[@id="frm_songList"]/div/table/tbody/tr/td['+str(i+1)+']/div/input/@value').get() 
         
