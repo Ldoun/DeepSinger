@@ -65,19 +65,24 @@ class QuotesSpider(scrapy.Spider):
 
     def parse(self, response):
         song_id = None
+        list_id = 'frm_songList'
         song_list = response.xpath('//*[@id="frm_songList"]/div/table/tbody/tr[*]/td[3]/div/div/a[2]/@title').getall()
+        if len(song_list) == 0:
+            song_list = response.xpath('//*[@id="frm_searchSong"]/div/table/tbody/tr[*]/td[3]/div/div/a[2]/@title').getall()
+            list_id = 'frm_searchSong'
+
         for i,title in enumerate(song_list):
             print(response.meta['title'])
             if title == response.meta['title']:
-                song_id = response.xpath('//*[@id="frm_songList"]/div/table/tbody/tr/td['+str(i+1)+']/div/input/@value').get() 
+                song_id = response.xpath('//*[@id="'+list_id+'"]/div/table/tbody/tr/td['+str(i+1)+']/div/input/@value').get() 
         
         if song_id == None:
             for i,title in enumerate(song_list):
                 if response.meta['title'] in title:
-                    song_id = response.xpath('//*[@id="frm_songList"]/div/table/tbody/tr/td['+str(i+1)+']/div/input/@value').get() 
+                    song_id = response.xpath('//*[@id="'+list_id+'"]/div/table/tbody/tr/td['+str(i+1)+']/div/input/@value').get() 
 
         if song_id == None:
-            print(response.meta)
+            print('failed:',response.meta)
         '''if song_id == None:
             song_id = response.xpath('//*[@id="conts"]/div[*]/div/ul/li[1]/dl/dt/a[1]/@data-song-no').getall()[0]'''
 
