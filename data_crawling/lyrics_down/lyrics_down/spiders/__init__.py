@@ -72,15 +72,18 @@ class QuotesSpider(scrapy.Spider):
             list_id = 'frm_searchSong'
 
         for i,title in enumerate(song_list):
-            print(response.meta['title'])
             if title == response.meta['title']:
-                song_id = response.xpath('//*[@id="'+list_id+'"]/div/table/tbody/tr/td['+str(i+1)+']/div/input/@value').get() 
+                song_id = response.xpath('//*[@id="'+list_id+'"]/div/table/tbody/tr/td['+str(i+1)+']/div/input/@value').get()
+                if song_id == None:
+                    song_id = response.xpath('//*[@id="'+list_id+'"]/div/table/tbody/tr['+str(i+1)+']/td[1]/div/input/@value').get()
         
         if song_id == None:
             for i,title in enumerate(song_list):
                 if response.meta['title'] in title:
                     song_id = response.xpath('//*[@id="'+list_id+'"]/div/table/tbody/tr/td['+str(i+1)+']/div/input/@value').get() 
-
+                    if song_id == None:
+                        song_id = response.xpath('//*[@id="'+list_id+'"]/div/table/tbody/tr['+str(i+1)+']/td[1]/div/input/@value').get()
+        
         if song_id == None:
             print('failed:',response.meta)
         '''if song_id == None:
