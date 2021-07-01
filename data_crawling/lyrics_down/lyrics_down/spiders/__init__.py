@@ -85,10 +85,14 @@ class QuotesSpider(scrapy.Spider):
                         song_id = response.xpath('//*[@id="'+list_id+'"]/div/table/tbody/tr['+str(i+1)+']/td[1]/div/input/@value').get()
         
         if song_id == None:
-            print('failed:',response.meta)
-        '''if song_id == None:
-            song_id = response.xpath('//*[@id="conts"]/div[*]/div/ul/li[1]/dl/dt/a[1]/@data-song-no').getall()[0]'''
+            titles = response.xpath('//*[@id="conts"]/div[5]/div[1]/ul/li[*]/dl/dt/a[2]/text()').getall()
+            for i,title in titles:
+                if title == response.meta['title']:
+                    song_id = response.xpath('//*[@id="conts"]/div[5]/div/ul/li['+str(i+1)+']/dl/dt/a[1]/@data-song-no').get()
 
+        if song_id == None:
+            print('failed:',response.meta)
+            
         #print('song_id: '+str(song_id.get()))
         url = 'https://www.melon.com/song/detail.htm?songId='+str(song_id)
         yield scrapy.Request(url=url, callback=self.parse_lyrics,meta=response.meta)
