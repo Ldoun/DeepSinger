@@ -72,23 +72,23 @@ class QuotesSpider(scrapy.Spider):
             list_id = 'frm_searchSong'
 
         for i,title in enumerate(song_list):
-            if title == response.meta['title']:
+            if title.replace(' ','') == response.meta['title'].replace(' ',''):
                 song_id = response.xpath('//*[@id="'+list_id+'"]/div/table/tbody/tr/td['+str(i+1)+']/div/input/@value').get()
                 if song_id == None:
                     song_id = response.xpath('//*[@id="'+list_id+'"]/div/table/tbody/tr['+str(i+1)+']/td[1]/div/input/@value').get()
         
         if song_id == None:
             for i,title in enumerate(song_list):
-                if response.meta['title'] in title:
+                if response.meta['title'].replace(' ','') in title.replace(' ',''):
                     song_id = response.xpath('//*[@id="'+list_id+'"]/div/table/tbody/tr/td['+str(i+1)+']/div/input/@value').get() 
-                    if song_id == None:
+                    if song_id == None: 
                         song_id = response.xpath('//*[@id="'+list_id+'"]/div/table/tbody/tr['+str(i+1)+']/td[1]/div/input/@value').get()
         
         if song_id == None:
-            titles = response.xpath('//*[@id="conts"]/div[5]/div[1]/ul/li[*]/dl/dt/a[2]/text()').getall()
+            titles = response.xpath('//*[@id="conts"]/div[*]/div[1]/ul/li[*]/dl/dt/a[2]/text()').getall()
             for i,title in enumerate(titles):
-                if title == response.meta['title']:
-                    song_id = response.xpath('//*[@id="conts"]/div[5]/div/ul/li['+str(i+1)+']/dl/dt/a[1]/@data-song-no').get()
+                if title.replace(' ','') == response.meta['title'].replace(' ',''):
+                    song_id = response.xpath('//*[@id="conts"]/div[*]/div/ul/li['+str(i+1)+']/dl/dt/a[1]/@data-song-no').get()
 
         if song_id == None:
             print('failed:',response.meta)
