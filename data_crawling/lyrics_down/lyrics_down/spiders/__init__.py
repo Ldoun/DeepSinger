@@ -64,10 +64,22 @@ class QuotesSpider(scrapy.Spider):
             yield scrapy.Request(url=url, callback=self.parse,meta=meta)
 
     def parse(self, response):
-        try:
-            song_id = response.xpath('//*[@id="conts"]/div[*]/div/ul/li[1]/dl/dt/a[1]/@data-song-no').getall()[0]
-        except:
-            song_id = response.xpath('//*[@id="frm_songList"]/div/table/tbody/tr/td[1]/div/input/@value').get()
+        song_id = None
+        song_list = response.xpath('//*[@id="frm_songList"]/div/table/tbody/tr[*]/td[3]/div/div/a[2]/@title').getall()
+        for i,title in enumerate(song_list):
+            if title == response.meta['title']:
+                song_id = response.xpath('//*[@id="frm_songList"]/div/table/tbody/tr/td['+str(i+1)+']/div/input/@value').get() 
+        
+        if song_id == None:
+            for i,title in enumerate(song_list):
+                if response.meta['title'] in title:
+                    song_id = response.xpath('//*[@id="frm_songList"]/div/table/tbody/tr/td['+str(i+1)+']/div/input/@value').get() 
+
+        if song_id == None:
+            print(response.meta)
+        '''if song_id == None:
+            song_id = response.xpath('//*[@id="conts"]/div[*]/div/ul/li[1]/dl/dt/a[1]/@data-song-no').getall()[0]'''
+
         #print('song_id: '+str(song_id.get()))
         url = 'https://www.melon.com/song/detail.htm?songId='+str(song_id)
         yield scrapy.Request(url=url, callback=self.parse_lyrics,meta=response.meta)
