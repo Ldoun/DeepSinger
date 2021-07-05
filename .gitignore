@@ -2,6 +2,7 @@ song.csv
 song2.csv
 result.csv
 
+*.text
 *.txt
 *.tsv
 *.csv
