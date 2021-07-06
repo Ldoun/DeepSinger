@@ -31,7 +31,8 @@ for index,m_file in enumerate(files):
         prediction = separator.separate(waveform)
     except Exception as e:
         print(e)
-
+        continue
+    
     y = np.swapaxes(prediction['vocals'], 0, 1)
     y = librosa.to_mono(y)
 
