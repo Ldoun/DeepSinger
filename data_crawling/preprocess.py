@@ -26,9 +26,12 @@ for index,m_file in enumerate(files):
         continue
 
     #vocal extraction
-    waveform, _ = audio_loader.load(os.path.join(music_dir,m_file), sample_rate=22050)
-    prediction = separator.separate(waveform)
-
+    try:
+        waveform, _ = audio_loader.load(os.path.join(music_dir,m_file), sample_rate=22050)
+        prediction = separator.separate(waveform)
+    except Exception as e:
+        print(e)
+        
     y = np.swapaxes(prediction['vocals'], 0, 1)
     y = librosa.to_mono(y)
 
