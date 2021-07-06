@@ -42,13 +42,13 @@ for index,m_file in enumerate(files):
     pitch_values = pitch.selected_array['frequency']
     
 
-    fitered_voice = []
+    fitered_voice = np.array([])
     non_vocal_frame_cnt = 0
     frames_sum = []
     if pitch_values[0] ==0 or sum(abs(loudness_normalized_audio[:441])) <= 441*thresh_hold:
         non_vocal_frame_cnt += 1
     else:
-        fitered_voice = fitered_voice + loudness_normalized_audio[:441]
+        fitered_voice = np.append(fitered_voice ,loudness_normalized_audio[:441])
 
     for i,p in enumerate(pitch_values):
         index = i + 1 
@@ -60,11 +60,9 @@ for index,m_file in enumerate(files):
         
         else:
             if non_vocal_frame_cnt > 10:
-                for i in range(4410):
-                    fitered_voice.append(0)
+                fitered_voice = np.append(fitered_voice,np.zeros(4410))
                 
-            fitered_voice = fitered_voice + list(loudness_normalized_audio[math.floor(441 * index):math.floor(441 * index) + frame_cnt])
+            fitered_voice = np.append(fitered_voice ,loudness_normalized_audio[math.floor(441 * index):math.floor(441 * index) + frame_cnt])
             non_vocal_frame_cnt = 0
-
-    fitered_voice = np.array(fitered_voice)
+    
     write(os.path.join(output_dir,m_file),22050,fitered_voice)
