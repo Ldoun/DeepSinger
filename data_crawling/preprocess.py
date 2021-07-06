@@ -13,11 +13,12 @@ from spleeter.audio.adapter import AudioAdapter
 
 music_dir = sys.argv[1]
 output_dir = sys.argv[2]
+thresh_hold = sys.argv[2]
 
 audio_loader = AudioAdapter.default()
 separator = Separator('spleeter:2stems')
 
-thresh_hold = 0.03
+thresh_hold = float(thresh_hold)
 files = os.listdir(music_dir)
 for index,m_file in enumerate(files):
     print(len(files) - index)
