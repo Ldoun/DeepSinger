@@ -13,7 +13,7 @@ from spleeter.audio.adapter import AudioAdapter
 
 music_dir = sys.argv[1]
 output_dir = sys.argv[2]
-thresh_hold = sys.argv[2]
+thresh_hold = sys.argv[3]
 
 audio_loader = AudioAdapter.default()
 separator = Separator('spleeter:2stems')
@@ -31,7 +31,7 @@ for index,m_file in enumerate(files):
         prediction = separator.separate(waveform)
     except Exception as e:
         print(e)
-        
+
     y = np.swapaxes(prediction['vocals'], 0, 1)
     y = librosa.to_mono(y)
 
