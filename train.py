@@ -363,13 +363,14 @@ def main(config, model_weight=None, opt_weight=None, scaler_weight = None):
     model = get_model(input_size, output_size, config)
     crit = get_crit(output_size, tok.pad)
 
-    if model_weight is not None:
-        model.load_state_dict(model_weight)
-
-    # Pass models to GPU device if it is necessary.
+    #multigpu -> singlegpu loading
     if config.multi_gpu and not config.not_multi_gpu:
         config.multi_gpu = False
-        
+        model.module.load_state_dict(model_weight)
+    
+    elif model_weight is not None:
+        model.load_state_dict(model_weight)
+
     if config.multi_gpu:
         model = nn.DataParallel(model)
         model.cuda()
