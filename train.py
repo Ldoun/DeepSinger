@@ -216,6 +216,12 @@ def define_argparser(is_continue=False):
     )
 
     p.add_argument(
+        '--not_multi_gpu',
+        action='store_true',
+        help='for continue train',
+    )
+
+    p.add_argument(
         '--log_dir',
         type=str,
         default='../tensorboard'
@@ -361,7 +367,9 @@ def main(config, model_weight=None, opt_weight=None, scaler_weight = None):
         model.load_state_dict(model_weight)
 
     # Pass models to GPU device if it is necessary.
-
+    if config.multi_gpu and not config.not_multi_gpu:
+        config.multi_gpu = False
+        
     if config.multi_gpu:
         model = nn.DataParallel(model)
         model.cuda()
