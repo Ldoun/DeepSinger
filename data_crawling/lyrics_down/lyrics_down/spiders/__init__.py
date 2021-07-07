@@ -70,6 +70,7 @@ class QuotesSpider(scrapy.Spider):
         for i,title in enumerate(titles):
             if title.replace(' ','') == response.meta['title'].replace(' ',''):
                 song_id = response.xpath('//*[@id="conts"]/div[*]/div/ul/li['+str(i+1)+']/dl/dt/a[1]/@data-song-no').get()
+                break
 
         if song_id == None:
             song_list = response.xpath('//*[@id="frm_songList"]/div/table/tbody/tr[*]/td[3]/div/div/a[2]/@title').getall()
@@ -83,6 +84,9 @@ class QuotesSpider(scrapy.Spider):
                     song_id = response.xpath('//*[@id="'+list_id[i]+'"]/div/table/tbody/tr/td['+str(i+1)+']/div/input/@value').get()
                     if song_id == None:
                         song_id = response.xpath('//*[@id="'+list_id[i]+'"]/div/table/tbody/tr['+str(i+1)+']/td[1]/div/input/@value').get()
+                        break
+                    else:
+                        break
             
         if song_id == None:
             for i,title in enumerate(song_list):
@@ -90,7 +94,10 @@ class QuotesSpider(scrapy.Spider):
                     song_id = response.xpath('//*[@id="'+list_id[i]+'"]/div/table/tbody/tr/td['+str(i+1)+']/div/input/@value').get() 
                     if song_id == None: 
                         song_id = response.xpath('//*[@id="'+list_id[i]+'"]/div/table/tbody/tr['+str(i+1)+']/td[1]/div/input/@value').get()
-        
+                        break
+                    else:
+                        break
+                    
         if song_id == None:
             print('failed:',response.meta)
 
