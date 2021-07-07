@@ -57,7 +57,7 @@ for index,m_file in enumerate(files):
 
     for i,p in enumerate(pitch_values):
         index = i + 1 
-        frame_cnt = 441 + (index % 2)
+        frame_cnt = 441
         frame_sum = sum(abs(loudness_normalized_audio[math.floor(441 * index):math.floor(441 * index) + frame_cnt]))
         frames_sum.append(frame_sum)
         if p == 0 or frame_sum < frame_cnt*thresh_hold:
