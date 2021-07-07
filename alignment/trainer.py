@@ -385,9 +385,14 @@ class MaximumLikelihoodEstimationEngine(Engine):
 
         model_fn = '.'.join(model_fn)
 
+        if config.multi_gpu:
+            model_data = engine.model.module.state_dict()
+        else:
+            model_data = engine.model.state_dict()
+
         torch.save(
             {
-                'model':engine.model.state_dict(),
+                'model':model_data,
                 'opt': train_engine.optimizer.state_dict(),
                 'scaler': train_engine.scaler.state_dict(),
                 'config': config
