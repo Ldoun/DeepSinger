@@ -73,7 +73,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         input_y = mini_batch_tgt[0][:,:-1]
         #print(engine.max_target_ratio)
         
-        while chunk_index < np.clip(engine.max_target_ratio,0,1) * max(y_length.tolist()) -1:      
+        while chunk_index < np.clip(engine.max_target_ratio,0,1) * (max(y_length.tolist()) -1):      
             engine.model.train()
             engine.optimizer.zero_grad()
 
