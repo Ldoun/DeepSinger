@@ -264,8 +264,7 @@ class alignment_model(nn.Module):
                             attention_dim = attention_dim,
                             location_feature_dim = location_feature_dim,
                             attention_kernel_size = 31,
-        ), 
-
+        )
         self.p_embedding = nn.Embedding(num_embeddings=vocab_size,embedding_dim=emb_hs)
         self.concat = nn.Linear(en_hidden_size + de_hidden_size,1024)
         self.generator = Generator(input_size=1024,output_size=vocab_size)
