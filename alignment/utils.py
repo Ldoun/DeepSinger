@@ -38,7 +38,8 @@ def apply_attention_make_batch(tensor,mask,index,tbtt_step,x_length,y_length):
     tensor_pad.zero_()
 
     mask_pad = torch.ones(tensor.size(0), tbtt_step * max(max_length))
-
+    
+    last_index = []
     for i in range(tensor.size(0)):
         
         t = tensor[i,:,index[i]:index[i] + tbtt_step * max_length[i]]
@@ -47,8 +48,9 @@ def apply_attention_make_batch(tensor,mask,index,tbtt_step,x_length,y_length):
 
         m = mask[i,index[i]:index[i] + tbtt_step * max_length[i]]
         mask_pad[i,:m.size(0)] = m
+        last_index.append(index[i] + tbtt_step * max_length[i])
         
-    return tensor_pad,mask_pad.bool()
+    return tensor_pad,mask_pad.bool(),last_index
 
 
 

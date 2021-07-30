@@ -82,28 +82,27 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     chunk_y = input_y[:,chunk_index:chunk_index + engine.config.tbtt_step].view(input_y.size(0),-1).to(device)
                     chunk_y_label = y[:,chunk_index:chunk_index + engine.config.tbtt_step].view(input_y.size(0),-1).to(device)
                     
-                    start_index = start_index + attention_index
+                    #start_index = start_index + attention_index
                     
                     #print('start_index',start_index)
                     #print('attention_index',attention_index)
                         
                     #print('chunk_x:',chunk_x.shape)
                     if encoder_hidden is None:
-                        chunk_x,chunk_mask = apply_attention_make_batch(x,mask,start_index,engine.config.tbtt_step,x_length,y_length)
+                        chunk_x,chunk_mask,start_index = apply_attention_make_batch(x,mask,start_index,engine.config.tbtt_step,x_length,y_length)
                         chunk_x = chunk_x.to(device)
                         chunk_mask = chunk_mask.to(device)
 
                         y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),(chunk_y))# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
                         
                     else:
-                        chunk_x,chunk_mask = apply_attention_make_batch(x,mask,start_index,engine.config.tbtt_step , x_length, y_length)
+                        chunk_x,chunk_mask,start_index = apply_attention_make_batch(x,mask,start_index,engine.config.tbtt_step , x_length, y_length)
                         chunk_x = chunk_x.to(device)
                         chunk_mask = chunk_mask.to(device)
                         encoder_hidden = detach_hidden(encoder_hidden)
                         decoder_hidden = detach_hidden(decoder_hidden)
                         y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),(chunk_y),en_hidden = encoder_hidden,de_hidden = decoder_hidden)# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
                     
-                    attention_index = np.array(torch.argmax(mini_attention[:,-1,:],dim=1).tolist())
                     chunk_index = chunk_index + engine.config.tbtt_step
 
                     loss = engine.crit(# pad만으로 구성돼서?
