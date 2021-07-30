@@ -9,6 +9,7 @@ result.csv
 *.pth
 *.model
 *.vocab
+*Clova*
 sample
 
 # Byte-compiled / optimized / DLL files

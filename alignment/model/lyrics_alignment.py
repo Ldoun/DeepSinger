@@ -16,39 +16,6 @@ import pickle
 #amp 오늘 안에 해결 안되면 Native torch로 변환
 
 
-class LinearNorm(torch.nn.Module):
-    def __init__(self, in_dim, out_dim, bias=True, w_init_gain='linear'):
-        super(LinearNorm, self).__init__()
-        self.linear_layer = torch.nn.Linear(in_dim, out_dim, bias=bias)
-
-        torch.nn.init.xavier_uniform_(
-            self.linear_layer.weight,
-            gain=torch.nn.init.calculate_gain(w_init_gain))
-
-    def forward(self, x):
-        return self.linear_layer(x)
-
-
-class ConvNorm(torch.nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size=1, stride=1,
-                 padding=None, dilation=1, bias=True, w_init_gain='linear'):
-        super(ConvNorm, self).__init__()
-        if padding is None:
-            assert(kernel_size % 2 == 1)
-            padding = int(dilation * (kernel_size - 1) / 2)
-
-        self.conv = torch.nn.Conv1d(in_channels, out_channels,
-                                    kernel_size=kernel_size, stride=stride,
-                                    padding=padding, dilation=dilation,
-                                    bias=bias)
-
-        torch.nn.init.xavier_uniform_(
-            self.conv.weight, gain=torch.nn.init.calculate_gain(w_init_gain))
-
-    def forward(self, signal):
-        conv_signal = self.conv(signal)
-        return conv_signal
-
 class  location_sensitive_attention(nn.Module):
     def __init__(self,encoder_hidden_size,decoder_hidden_size,attention_dim,location_feature_dim,attention_kernel_size):
         super().__init__()
@@ -126,83 +93,6 @@ class  location_sensitive_attention(nn.Module):
         #attention_context = attention_context.squeeze(1) # [N, Ti]
         # print('context', attention_context.size())
         return attention_context, attention_weights
-
-class LocationLayer(nn.Module):
-    def __init__(self, attention_n_filters, attention_kernel_size,
-                 attention_dim):
-        super(LocationLayer, self).__init__()
-        padding = int((attention_kernel_size - 1) / 2)
-        self.location_conv = ConvNorm(2, attention_n_filters,
-                                      kernel_size=attention_kernel_size,
-                                      padding=padding, bias=False, stride=1,
-                                      dilation=1)
-        self.location_dense = LinearNorm(attention_n_filters, attention_dim,
-                                         bias=False, w_init_gain='tanh')
-
-    def forward(self, attention_weights_cat):
-        processed_attention = self.location_conv(attention_weights_cat)
-        processed_attention = processed_attention.transpose(1, 2)
-        processed_attention = self.location_dense(processed_attention)
-        return processed_attention
-
-class Attention(nn.Module):
-    def __init__(self, attention_rnn_dim, embedding_dim, attention_dim,
-                 attention_location_n_filters, attention_location_kernel_size):
-        super(Attention, self).__init__()
-        self.query_layer = LinearNorm(attention_rnn_dim, attention_dim,
-                                      bias=False, w_init_gain='tanh')
-        self.memory_layer = LinearNorm(embedding_dim, attention_dim, bias=False,
-                                       w_init_gain='tanh')
-        self.v = LinearNorm(attention_dim, 1, bias=False)
-        self.location_layer = LocationLayer(attention_location_n_filters,
-                                            attention_location_kernel_size,
-                                            attention_dim)
-        self.score_mask_value = -float("inf")
-
-    def get_alignment_energies(self, query, processed_memory,
-                               attention_weights_cat):
-        """
-        PARAMS
-        ------
-        query: decoder output (batch, n_mel_channels * n_frames_per_step)
-        processed_memory: processed encoder outputs (B, T_in, attention_dim)
-        attention_weights_cat: cumulative and prev. att weights (B, 2, max_time)
-        RETURNS
-        -------
-        alignment (batch, max_time)
-        """
-
-        processed_query = self.query_layer(query.unsqueeze(1))
-        processed_attention_weights = self.location_layer(attention_weights_cat)
-        energies = self.v(torch.tanh(
-            processed_query + processed_attention_weights + processed_memory))
-
-        energies = energies.squeeze(-1)
-        return energies
-
-    def forward(self, attention_hidden_state, memory, processed_memory,
-                attention_weights_cat, mask):
-        """
-        PARAMS
-        ------
-        attention_hidden_state: attention rnn last output
-        memory: encoder outputs
-        processed_memory: processed encoder outputs
-        attention_weights_cat: previous and cummulative attention weights
-        mask: binary mask for padded data
-        """
-        alignment = self.get_alignment_energies(
-            attention_hidden_state, processed_memory, attention_weights_cat)
-
-        if mask is not None:
-            alignment.data.masked_fill_(mask, self.score_mask_value)
-
-        attention_weights = F.softmax(alignment, dim=1)
-        attention_context = torch.bmm(attention_weights.unsqueeze(1), memory)
-        attention_context = attention_context.squeeze(1)
-
-        return attention_context, attention_weights
-
     
 class ConvolutionBlock(nn.Module):
     def __init__(self,in_ch,out_ch,kernel_size,padding):
@@ -360,46 +250,25 @@ class alignment_model(nn.Module):
         de_hidden_size=1024,
         attention_dim=256,
         location_feature_dim = 128,
-        attention_rnn_dim = 1024,
         drop_p=0.1
     ):
-
-        #p_decoder_dropout = 0.1,
-        #p_attention_dropout = 0.1,
 
         super().__init__()
         self.decoder_hs = de_hidden_size
         self.encoder_hs = en_hidden_size
         self.encoder = mel_encoder(in_ch = input_size,out_ch=en_hidden_size,kernel=9,pad=4,drop_p=drop_p)
         self.decoder = phoneme_decoder(embedding_dim=emb_hs,hidden_size=de_hidden_size,encoder_hs=en_hidden_size,drop_p = drop_p)
-        '''self.attention = location_sensitive_attention(
+        self.attention = location_sensitive_attention(
                             encoder_hidden_size=en_hidden_size,
                             decoder_hidden_size=de_hidden_size,
                             attention_dim = attention_dim,
                             location_feature_dim = location_feature_dim,
                             attention_kernel_size = 31,
-        ), '''
-        self.attention = Attention(
-                            attention_rnn_dim=de_hidden_size,
-                            embedding_dim=en_hidden_size,
-                            attention_dim = attention_dim,
-                            attention_location_n_filters = location_feature_dim,
-                            attention_location_kernel_size = 31,
-        ) 
+        ), 
+
         self.p_embedding = nn.Embedding(num_embeddings=vocab_size,embedding_dim=emb_hs)
         self.concat = nn.Linear(en_hidden_size + de_hidden_size,1024)
         self.generator = Generator(input_size=1024,output_size=vocab_size)
-
-        self.attention_rnn = nn.LSTMCell(
-            emb_hs + en_hidden_size,
-            attention_rnn_dim)
-
-        self.decoder_rnn = nn.LSTMCell(
-            attention_rnn_dim + en_hidden_size,
-            de_hidden_size, 1)
-
-        self.attention_rnn_dim = attention_rnn_dim
-        self.dropout = nn.Dropout(p=drop_p)
 
     def generate_mask(self,x,length):
         mask = []
@@ -461,58 +330,36 @@ class alignment_model(nn.Module):
 
         else:
             decoder_hidden = de_hidden
-        
-        attention_hidden = h_src.new_zeros(h_src.size(0), self.attention_rnn_dim)
-        attention_cell = h_src.new_zeros(h_src.size(0), self.attention_rnn_dim)
 
-        decoder_hidden = h_src.new_zeros(h_src.size(0), self.decoder_hs)
-        decoder_cell = h_src.new_zeros(h_src.size(0), self.decoder_hs)
 
-        attention_context_vector = emb_tgt.new_zeros(batch_size,self.encoder_hs)
+        attention_context_vector = emb_tgt.new_zeros(batch_size,1,self.encoder_hs)
         cumulative_attention_weights = h_src.new_zeros(h_src.size(0),mel_length)
-        processed_memory = self.attention.memory_layer(h_src)
-        attention_weights = h_src.new_zeros(h_src.size(0),mel_length)
 
         for t in range(ipa.size(1)):
-            #if t == 0:
-            #    self.attention.reset()
+            if t == 0:
+               self.attention.reset()
                 
-            emb_t = emb_tgt[:,t,:]
+            emb_t = emb_tgt[:,t,:].unsqueeze(1)
             #print(t)
             #print("emn_t:",emb_t.shape)
             #print("h_src:",h_src.shape)
             #emb_t = emb_t.unsqueeze(1)
-            #cumulative_attention = cumulative_attention_weights.unsqueeze(1)
+            cumulative_attention = cumulative_attention_weights.unsqueeze(1)
             #|emb_t| = (batch_size,1,word_vec_size)
             #|h_t_tilde| = (batch_size,1,hidden_size)
             #|attention_context_vector| = (batch_size,1,encoder_hidden_size)
 
-            cell_input = torch.cat((emb_t, attention_context_vector), -1)
-            attention_hidden, attention_cell = self.attention_rnn(
-                cell_input, (attention_hidden, attention_cell))
-            attention_hidden = self.dropout(attention_hidden)
-
-            #decoder_output,decoder_hidden = self.decoder(emb_t, attention_context_vector,decoder_hidden)
+            decoder_output,decoder_hidden = self.decoder(emb_t, attention_context_vector,decoder_hidden)
 
             #|decoder_output| = (batch_size,1,hidden_size)
             #|decoder_hidden| = (n_layer,batch_size,hidden_size)
 
-            attention_weights_cat = torch.cat(
-            (attention_weights.unsqueeze(1),
-             cumulative_attention_weights.unsqueeze(1)), dim=1)
-
-            attention_context_vector, attention_weights = self.attention(attention_hidden,h_src,processed_memory, attention_weights_cat,mask)
+            attention_context_vector, attention_weights = self.attention(decoder_output,h_src,cumulative_attention,mask)
             cumulative_attention_weights = cumulative_attention_weights + attention_weights
-
-            decoder_input = torch.cat(
-            (attention_hidden, attention_context_vector), -1)
-            decoder_hidden, decoder_cell = self.decoder_rnn(
-                decoder_input, (decoder_hidden, decoder_cell))
-            decoder_hidden = self.dropout(decoder_hidden)
             
             #print('decoder_output',decoder_output.shape)
             #print('attention_context_vector',self.attention_context_vector.shape)
-            h_t_tilde = self.concat(torch.cat([decoder_hidden,attention_context_vector],dim=1))
+            h_t_tilde = self.concat(torch.cat([decoder_output,attention_context_vector],dim=-1))
             #|h_t_tilde| = (batch_size,1,hidden_size)
             #print('h_t_tilde', h_t_tilde.shape)
             
@@ -522,7 +369,7 @@ class alignment_model(nn.Module):
         
         #print('ipa',ipa.size())
         #print(h_tilde)
-        h_tilde = torch.stack(h_tilde,dim=1)
+        h_tilde = torch.cat(h_tilde,dim=1)
         attention = torch.stack(attention,dim=1)
         #|h_t_tilde| = (batch_size,length,hidden_size)
 

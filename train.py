@@ -253,7 +253,6 @@ def get_model(input_size, output_size, config):
             config.de_hs,
             config.attention_dim,
             config.location_feature_dim,
-            config.attention_rnn_dim,
             config.dropout
         )
 
