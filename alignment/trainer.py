@@ -7,7 +7,7 @@ import torch.nn.utils as torch_utils
 from  torch.cuda.amp import autocast
 from torch.cuda.amp import GradScaler
 
-from alignment.utils import get_grad_norm,get_parameter_norm,detach_hidden,guided_attentions,apply_attention_make_batch
+from alignment.utils import *
 from ignite.contrib.handlers.tensorboard_logger import *
 
 from ignite.engine import Engine
@@ -67,43 +67,47 @@ class MaximumLikelihoodEstimationEngine(Engine):
         encoder_hidden,decoder_hidden = None,None 
         loss_list = []
         attention_loss_list = []
-        chunk_index = 0
+        chunk_index = np.zeros((x.size(0),), dtype=int)
         start_index = np.zeros((x.size(0),), dtype=int)
-        attention_index = 0
         input_y = mini_batch_tgt[0][:,:-1]
+        
         #print(engine.max_target_ratio)
         
-        while chunk_index < np.clip(engine.max_target_ratio,0,1) * (max(y_length.tolist()) -1):      
+        while max(chunk_index) < np.clip(engine.max_target_ratio,0,1) * (max(y_length.tolist()) -1):      
             engine.model.train()
             engine.optimizer.zero_grad()
 
             with torch.autograd.set_detect_anomaly(True):
                 with autocast(engine.config.use_autocast):
-                    chunk_y = input_y[:,chunk_index:chunk_index + engine.config.tbtt_step].view(input_y.size(0),-1).to(device)
-                    chunk_y_label = y[:,chunk_index:chunk_index + engine.config.tbtt_step].view(input_y.size(0),-1).to(device)
+                    chunk_y,chunk_y_label = y_make_batch(input_y,y,chunk_index,engine.config.tbtt_step)
+                    chunk_y = chunk_y.view(input_y.size(0),-1).to(device)
+                    chunk_y_label = chunk_y_label.view(input_y.size(0),-1).to(device)
                     
                     #start_index = start_index + attention_index
                     
-                    #print('start_index',start_index)
-                    #print('attention_index',attention_index)
-                        
                     #print('chunk_x:',chunk_x.shape)
                     if encoder_hidden is None:
-                        chunk_x,chunk_mask,start_index = apply_attention_make_batch(x,mask,start_index,engine.config.tbtt_step,x_length,y_length)
+                        chunk_x,chunk_mask = apply_attention_make_batch(x,mask,start_index,engine.config.tbtt_step,x_length,y_length)
                         chunk_x = chunk_x.to(device)
                         chunk_mask = chunk_mask.to(device)
 
                         y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),(chunk_y))# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
                         
                     else:
-                        chunk_x,chunk_mask,start_index = apply_attention_make_batch(x,mask,start_index,engine.config.tbtt_step , x_length, y_length)
+                        chunk_x,chunk_mask = apply_attention_make_batch(x,mask,start_index,engine.config.tbtt_step , x_length, y_length)
                         chunk_x = chunk_x.to(device)
                         chunk_mask = chunk_mask.to(device)
                         encoder_hidden = detach_hidden(encoder_hidden)
                         decoder_hidden = detach_hidden(decoder_hidden)
                         y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),(chunk_y),en_hidden = encoder_hidden,de_hidden = decoder_hidden)# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
                     
-                    chunk_index = chunk_index + engine.config.tbtt_step
+                    for i,(attention,mel_start) in enumerate(zip(mini_attention,start_index)):
+                        index = get_next_index(attention)
+                        if index is False:
+                            continue
+                        start_index[i] = mel_start + index
+                        chunk_index = chunk_index + engine.config.tbtt_step
+                    
 
                     loss = engine.crit(# pad만으로 구성돼서?
                         y_hat.contiguous().view(-1,y_hat.size(-1)),
@@ -113,9 +117,6 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     total_acc += (y_hat.argmax(-1).view(-1) == chunk_y_label.view(-1)).sum().item()
                     total_count += chunk_y_label.size(0) * chunk_y_label.size(1)
 
-
-                    '''print(chunk_y_label[:,-1])
-                    print(attention_index)'''
 
                     soft_mask = guided_attentions(mini_attention.shape,engine.config.W)
                     soft_mask = torch.from_numpy(soft_mask).to(device)
@@ -186,7 +187,6 @@ class MaximumLikelihoodEstimationEngine(Engine):
             loss_list = []
             chunk_index = 0
             start_index = np.zeros((x.size(0),), dtype=int)
-            attention_index = 0
             input_y = mini_batch_tgt[0][:,:-1]
             with autocast(engine.config.use_autocast):
                 engine.model.eval()
