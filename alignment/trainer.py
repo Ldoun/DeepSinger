@@ -101,13 +101,6 @@ class MaximumLikelihoodEstimationEngine(Engine):
                         decoder_hidden = detach_hidden(decoder_hidden)
                         y_hat,mini_attention,encoder_hidden,decoder_hidden = engine.model((chunk_x,chunk_mask),(chunk_y),en_hidden = encoder_hidden,de_hidden = decoder_hidden)# pad token? need fixing https://github.com/kh-kim/simple-nmt/issues/40
                     
-                    for i,(attention,mel_start) in enumerate(zip(mini_attention,start_index)):
-                        index = get_next_index(attention)
-                        if index is False:
-                            continue
-                        start_index[i] = mel_start + index
-                        chunk_index = chunk_index + engine.config.tbtt_step
-                    
 
                     loss = engine.crit(# pad만으로 구성돼서?
                         y_hat.contiguous().view(-1,y_hat.size(-1)),
@@ -124,6 +117,13 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     
                     loss = loss + attn_loss
                     attention_loss_list.append(float(attn_loss))
+
+                    for i,(attention,mel_start) in enumerate(zip(mini_attention,start_index)):
+                        index = get_next_index(attention.clone().detach().cpu().numpy())
+                        if index is False:
+                            continue
+                        start_index[i] = mel_start + index
+                        chunk_index = chunk_index + engine.config.tbtt_step
 
             if (engine.config.gpu_id >=0 or engine.config.multi_gpu) and engine.config.use_autocast:
                 #print(1)

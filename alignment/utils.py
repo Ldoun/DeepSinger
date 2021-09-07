@@ -52,7 +52,7 @@ def apply_attention_make_batch(tensor,mask,index,tbtt_step,x_length,y_length):
 
 def y_make_batch(input_y_tensor,y_tensor,chunk_index,tbtt_step):
     y_input_pad = torch.LongTensor(input_y_tensor.size(0),tbtt_step)
-    y_pad = torch.IntTensor(input_y_tensor.size(0),tbtt_step)
+    y_pad = torch.LongTensor(input_y_tensor.size(0),tbtt_step)
 
     for i in range(y_pad.size(0)):
         y_input = input_y_tensor[i,chunk_index[i]:chunk_index[i] + tbtt_step]
