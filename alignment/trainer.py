@@ -70,10 +70,11 @@ class MaximumLikelihoodEstimationEngine(Engine):
         chunk_index = np.zeros((x.size(0),), dtype=int)
         start_index = np.zeros((x.size(0),), dtype=int)
         input_y = mini_batch_tgt[0][:,:-1]
+        counter = 0
         
         #print(engine.max_target_ratio)
         
-        while max(chunk_index) < np.clip(engine.max_target_ratio,0,1) * (max(y_length.tolist()) -1):      
+        while counter  < np.clip(engine.max_target_ratio,0,1) * (max(y_length.tolist()) -1):      
             engine.model.train()
             engine.optimizer.zero_grad()
 
@@ -124,6 +125,8 @@ class MaximumLikelihoodEstimationEngine(Engine):
                             continue
                         start_index[i] = mel_start + index
                         chunk_index = chunk_index + engine.config.tbtt_step
+
+                    counter += engine.config.tbtt_step
 
             if (engine.config.gpu_id >=0 or engine.config.multi_gpu) and engine.config.use_autocast:
                 #print(1)
