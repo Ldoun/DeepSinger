@@ -124,7 +124,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                         if index is False:
                             continue
                         start_index[i] = mel_start + index
-                        chunk_index = chunk_index + engine.config.tbtt_step
+                        chunk_index[i] = chunk_index[i] + engine.config.tbtt_step
 
                     counter += engine.config.tbtt_step
 
