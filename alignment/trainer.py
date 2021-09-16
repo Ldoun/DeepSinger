@@ -15,15 +15,7 @@ from ignite.engine import Events
 from ignite.metrics import RunningAverage
 from ignite.contrib.handlers.tqdm_logger import ProgressBar
 
-#TODO
-#TBTT 
-#guided_attention loss
-#attention map 합치기
-#TBTT일때 pack_padded_sequence, masking 
-#length 제거 -> pack padded sequence 제거
-
-
-#greedy training
+from multiprocessing import Pool 
 
 VERBOSE_SILENT = 0
 VERBOSE_EPOCH_WISE = 1
@@ -71,6 +63,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         start_index = np.zeros((x.size(0),), dtype=int)
         input_y = mini_batch_tgt[0][:,:-1]
         counter = 0
+        pool = Pool(processes=20)
         
         #print(engine.max_target_ratio)
         
@@ -119,11 +112,11 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     loss = loss + attn_loss
                     attention_loss_list.append(float(attn_loss))
 
-                    for i,(attention,mel_start) in enumerate(zip(mini_attention,start_index)):
-                        index = get_next_index(attention.clone().detach().cpu().numpy())
-                        if index is False:
+                    is_retrain = pool.map(get_next_index,mini_attention.clone().detach().cpu().numpy())
+                    for i,retrain in enumerate(is_retrain):
+                        if retrain == False:
                             continue
-                        start_index[i] = mel_start + index
+                        start_index[i] = start_index[i] + retrain
                         chunk_index[i] = chunk_index[i] + engine.config.tbtt_step
 
                     counter += engine.config.tbtt_step
