@@ -148,7 +148,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
             engine.lr_scheduler.step()
 
         engine.mini_attention = mini_attention[0,:,:x_length[0]].detach().cpu().numpy()
-        engine.filename = mini_batch_tgt[2][0]
+        engine.filename = mini_batch[2][0]
         engine.cnt += 1
         #if engine.config.use_noam_decay and engine.lr_scheduler is not None:
         #    engine.lr_scheduler.step()
@@ -214,7 +214,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         ppl = np.exp(loss)  
 
         engine.mini_attention = mini_attention[0,:,:x_length[0]].detach().cpu().numpy()
-        engine.filename = mini_batch_tgt[2][0]
+        engine.filename = mini_batch[2][0]
 
         return {
             'loss': loss,
