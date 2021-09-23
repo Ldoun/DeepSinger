@@ -344,7 +344,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         plt.title(engine.filename)
         plt.tight_layout()
 
-        writer.add_figure('attention allignment', fig,engine.state.iteration)
+        writer.add_figure('attention allignment', fig,train_engine.state.epoch)
 
     @staticmethod
     def training_log_attention_map(train_engine,writer):
@@ -485,7 +485,7 @@ class SingleTrainer():
         )
 
         self.valid_engine.add_event_handler(
-            Events.ITERATION_COMPLETED, #event
+            Events.EPOCH_COMPLETED, #event
             self.target_engine_class.log_attention_map, # func
             self.valid_engine,self.train_engine, self.tb_logger.writer
         )
