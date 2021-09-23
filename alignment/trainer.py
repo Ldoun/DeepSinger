@@ -147,7 +147,8 @@ class MaximumLikelihoodEstimationEngine(Engine):
         if engine.lr_scheduler is not None:
             engine.lr_scheduler.step()
 
-        engine.mini_attention = mini_attention[0,:,:x_length[0]].cpu().detach().numpy()
+        engine.mini_attention = mini_attention[0,:,:x_length[0]].detach().cpu().numpy()
+        engine.filename = mini_batch_tgt[2][0]
         engine.cnt += 1
         #if engine.config.use_noam_decay and engine.lr_scheduler is not None:
         #    engine.lr_scheduler.step()
@@ -174,6 +175,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
             mini_batch_tgt = (mini_batch[1][0],mini_batch[1][1])
             y_length = mini_batch_tgt[1] 
             
+
             y = mini_batch_tgt[0][:,1:]  #<BOS> 제외 정답문장 1번 단어부터 비교
             #|x| = (batch_size,128,length)
             #|y| = (batch_size,length)
@@ -211,7 +213,8 @@ class MaximumLikelihoodEstimationEngine(Engine):
         attention_loss = float(attn_loss)
         ppl = np.exp(loss)  
 
-        engine.mini_attention = mini_attention[0,:,:x_length[0]].cpu().numpy()
+        engine.mini_attention = mini_attention[0,:,:x_length[0]].detach().cpu().numpy()
+        engine.filename = mini_batch_tgt[2][0]
 
         return {
             'loss': loss,
@@ -331,6 +334,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         fig, ax = plt.subplots()
         im = ax.imshow( 
             engine.mini_attention,
+            title=engine.filename,
             aspect='auto',
             origin='lower',
             interpolation='none')
@@ -340,7 +344,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         plt.xlabel('Encoder timestep')
         plt.tight_layout()
 
-        writer.add_figure('attention allignment', fig,train_engine.state.epoch)
+        writer.add_figure('attention allignment', fig,engine.state.iteration)
 
     @staticmethod
     def training_log_attention_map(train_engine,writer):
@@ -349,6 +353,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         fig, ax = plt.subplots()
         im = ax.imshow( 
             train_engine.mini_attention,
+            title=train_engine.filename,
             aspect='auto',
             origin='lower',
             interpolation='none')
@@ -480,7 +485,7 @@ class SingleTrainer():
         )
 
         self.valid_engine.add_event_handler(
-            Events.EPOCH_COMPLETED, #event
+            Events.ITERATION_COMPLETED, #event
             self.target_engine_class.log_attention_map, # func
             self.valid_engine,self.train_engine, self.tb_logger.writer
         )

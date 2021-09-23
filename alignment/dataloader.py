@@ -50,9 +50,9 @@ class LJSpeechDataset(data.Dataset):
             audio (torch.FloatTensor): a feature sequence, [D, T]
         """
         text = self._get_text(index)
-        audio = self._get_audio(index)
+        audio,filename = self._get_audio(index)
         # print(text.size(), audio.size())
-        return text, audio
+        return text, audio, filename
 
     def __len__(self):
         return len(self.metadata)
@@ -72,7 +72,7 @@ class LJSpeechDataset(data.Dataset):
         if self.audio_transformer:
             audio = self.audio_transformer(audio)
         
-        return audio.squeeze(0)
+        return audio.squeeze(0),filename
     
 
 
@@ -178,7 +178,7 @@ class TextAudioCollate(object):
         decoder_mask = get_mask_from_lengths(output_lengths)
         #print('encoder_length:',input_lengths)
         #print('decoder_length:',output_lengths)
-        return (mel_padded,decoder_mask,output_lengths) ,(text_padded , input_lengths) 
+        return (mel_padded,decoder_mask,output_lengths) ,(text_padded , input_lengths), batch[2]
 
 
 def get_mask_from_lengths(lengths):
