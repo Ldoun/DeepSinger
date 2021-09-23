@@ -132,7 +132,7 @@ class TextAudioCollate(object):
     def __call__(self, batch):
         """Process one mini-batch samples, such as sorting and padding.
         Args:
-            batch: a list of (text sequence, audio feature sequence)
+            batch: a list of (text sequence, audio feature sequence, filename)
         Returns:
             text_padded: [N, Ti]
             input_lengths: [N]
@@ -173,12 +173,17 @@ class TextAudioCollate(object):
             output_lengths[i] = mel.size(1)
         #mel_padded = mel_padded.transpose(1, 2)  # [N, To, D]
 
+        filenames = []
+        for i in range(len(ids_sorted_decreasing)):
+            filename = batch[ids_sorted_decreasing[i]][2]
+            filenames.append(filename)
+
         # Generate mask
         encoder_mask = get_mask_from_lengths(input_lengths)
         decoder_mask = get_mask_from_lengths(output_lengths)
         #print('encoder_length:',input_lengths)
         #print('decoder_length:',output_lengths)
-        return (mel_padded,decoder_mask,output_lengths) ,(text_padded , input_lengths), batch[2]
+        return (mel_padded,decoder_mask,output_lengths) ,(text_padded , input_lengths), filenames
 
 
 def get_mask_from_lengths(lengths):
