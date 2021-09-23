@@ -341,7 +341,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         
         plt.ylabel('Decoder timestep')
         plt.xlabel('Encoder timestep')
-        plt.set_title(engine.filename)
+        plt.title(engine.filename)
         plt.tight_layout()
 
         writer.add_figure('attention allignment', fig,engine.state.iteration)
@@ -360,7 +360,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         
         plt.ylabel('Decoder timestep')
         plt.xlabel('Encoder timestep')
-        plt.set_title(train_engine.filename)
+        plt.title(train_engine.filename)
         plt.tight_layout()
 
         writer.add_figure('attention allignment(train)', fig, train_engine.cnt)
