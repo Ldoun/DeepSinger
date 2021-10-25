@@ -321,17 +321,19 @@ class alignment_model(nn.Module):
         h_tilde = []
         attention = []
         
-        if de_hidden is None:
+        '''if de_hidden is None:
             decoder_hidden = (
                 h_src.new_zeros(2,h_src.size(0),self.decoder_hs),
                 h_src.new_zeros(2,h_src.size(0),self.decoder_hs)
             )
 
         else:
-            decoder_hidden = de_hidden
+            decoder_hidden = de_hidden'''
 
-
-        attention_context_vector = emb_tgt.new_zeros(batch_size,1,self.encoder_hs)
+        decoder_hidden = encoder_hidden
+        decoder_output = decoder_hidden[0]
+        
+        #attention_context_vector = emb_tgt.new_zeros(batch_size,1,self.encoder_hs)
         cumulative_attention_weights = h_src.new_zeros(h_src.size(0),mel_length)
 
         for t in range(ipa.size(1)):
@@ -347,15 +349,15 @@ class alignment_model(nn.Module):
             #|emb_t| = (batch_size,1,word_vec_size)
             #|h_t_tilde| = (batch_size,1,hidden_size)
             #|attention_context_vector| = (batch_size,1,encoder_hidden_size)
-
+            #attention 구하고 decoder에 넣기
+            attention_context_vector, attention_weights = self.attention(decoder_output,h_src,cumulative_attention,mask)
+            cumulative_attention_weights = cumulative_attention_weights + attention_weights
+            
             decoder_output,decoder_hidden = self.decoder(emb_t, attention_context_vector,decoder_hidden)
 
             #|decoder_output| = (batch_size,1,hidden_size)
             #|decoder_hidden| = (n_layer,batch_size,hidden_size)
 
-            attention_context_vector, attention_weights = self.attention(decoder_output,h_src,cumulative_attention,mask)
-            cumulative_attention_weights = cumulative_attention_weights + attention_weights
-            
             #print('decoder_output',decoder_output.shape)
             #print('attention_context_vector',self.attention_context_vector.shape)
             h_t_tilde = self.concat(torch.cat([decoder_output,attention_context_vector],dim=-1))
