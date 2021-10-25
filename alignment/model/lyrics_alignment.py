@@ -296,7 +296,7 @@ class alignment_model(nn.Module):
         else:
             x = mel
 
-        #|mel| = (bs,128,length)
+        #|mel| = (bs,128,length)    
         #|ipa| = (bs,length,vocab)
 
         mel_length = x.size(2)
@@ -330,9 +330,9 @@ class alignment_model(nn.Module):
         else:
             decoder_hidden = de_hidden'''
 
-        decoder_hidden = encoder_hidden
+        decoder_hidden = encoder_hidden[0][0,:,:],encoder_hidden[0][0,:,:]
         decoder_output = decoder_hidden[0]
-        
+        print(decoder_output.shape)
         #attention_context_vector = emb_tgt.new_zeros(batch_size,1,self.encoder_hs)
         cumulative_attention_weights = h_src.new_zeros(h_src.size(0),mel_length)
 
