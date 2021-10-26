@@ -143,21 +143,21 @@ def define_argparser(is_continue=False):
     p.add_argument(
         '--de_hs',
         type=int,
-        default=1024,
+        default=256,
         help='decoder Hidden size'
     )
 
     p.add_argument(
         '--attention_rnn_dim',
         type=int,
-        default=1024,
+        default=None,
         help='attention_rnn_dim'
     )
 
     p.add_argument(
         '--attention_dim',
         type=int,
-        default=256,
+        default=128,
         help='attention dim size'
     )
 
