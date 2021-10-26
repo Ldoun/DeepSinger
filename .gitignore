@@ -146,3 +146,11 @@ data_crawling/lyrics_down/result.csv
 data_crawling/lyrics_result_drop.csv
 data_crawling/result.dropna.csv
 Yi_ren.py
+split_by_sentence.py
+setup2.py
+duration_extraction.py
+data_crawling/get_pitch.py
+data_crawling/data_preprocessing2.ipynb
+data_crawling/data_preprocessing.ipynb
+alignment/model/singing_model.py
+setup2.py
