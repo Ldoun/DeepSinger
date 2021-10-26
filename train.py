@@ -346,8 +346,8 @@ def main(config, model_weight=None, opt_weight=None, scaler_weight = None):
     
     collate_fn = TextAudioCollate()
 
-    train_dataloader = DataLoader(train_dataset, batch_sampler=train_batch_sampler,collate_fn=collate_fn)
-    valid_dataloader = DataLoader(valid_dataset, batch_sampler=valid_batch_sampler,collate_fn=collate_fn)
+    train_dataloader = DataLoader(train_dataset, batch_sampler=train_batch_sampler,collate_fn=collate_fn, num_workers=8, pin_memory=True)
+    valid_dataloader = DataLoader(valid_dataset, batch_sampler=valid_batch_sampler,collate_fn=collate_fn, num_workers=8, pin_memory=True)
 
     #print(tok.vocab)
     #print('-' * 80)
