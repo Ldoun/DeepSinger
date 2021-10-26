@@ -406,4 +406,4 @@ def main(config, model_weight=None, opt_weight=None, scaler_weight = None):
 
 if __name__ == '__main__':
     config = define_argparser()
-    main(config)    
+    main(config) 

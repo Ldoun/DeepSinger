@@ -268,7 +268,7 @@ class alignment_model(nn.Module):
         self.p_embedding = nn.Embedding(num_embeddings=vocab_size,embedding_dim=emb_hs)
         self.concat = nn.Linear(en_hidden_size + de_hidden_size,en_hidden_size)
         self.generator = Generator(input_size=en_hidden_size,output_size=vocab_size)
-        self.de_hidden_size = de_hidden_size
+
     def generate_mask(self,x,length):
         mask = []
 
@@ -330,11 +330,9 @@ class alignment_model(nn.Module):
         else:
             decoder_hidden = de_hidden'''
 
-        decoder_hidden = encoder_hidden
+        decoder_hidden = encoder_hidden        
         decoder_output = decoder_hidden[0][0].unsqueeze(1)
         #print(decoder_output.shape)
-        #print(decoder_hidden[0].shape)
-        
         #attention_context_vector = emb_tgt.new_zeros(batch_size,1,self.encoder_hs)
         cumulative_attention_weights = h_src.new_zeros(h_src.size(0),mel_length)
 
