@@ -1,4 +1,7 @@
 # DeepSinger
 unofficial implementation of Deepsinger
 
-***in development***
+End of development indefinitely
+- [X] song lyric recognition
+- [ ] split song into chunk
+- [ ] build song synthesizer 
