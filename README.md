@@ -1,5 +1,6 @@
 End of development indefinitely
 - [X] song lyric recognition
+- [ ] voice synthesis model
 
 ### What
 
